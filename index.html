@@ -57,9 +57,6 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .stat-lbl{font-size:10px;color:var(--muted);margin-top:5px;font-weight:700;
   text-transform:uppercase;letter-spacing:.3px}
 .stat-date{font-size:10px;color:var(--muted);margin-top:2px;font-weight:600}
-.all-done{background:var(--success);color:#fff;padding:14px 16px;border-radius:14px;
-  font-weight:800;text-align:center;margin-bottom:16px;font-size:13.5px;
-  box-shadow:0 4px 14px rgba(22,163,74,.35);letter-spacing:.2px}
 .error-box{background:#fef2f2;color:#991b1b;padding:12px 14px;border-radius:12px;
   font-size:12.5px;margin-bottom:14px;border-left:4px solid var(--danger);line-height:1.5}
 .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;line-height:1.6}
@@ -70,11 +67,8 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .clean-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;
   box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid var(--primary);transition:.15s}
 .clean-card.both{border-left-color:var(--warning);background:var(--warning-bg)}
-.clean-card.done{border-left-color:var(--success);background:var(--success-bg);opacity:.85}
 .cc-top{display:flex;align-items:center;justify-content:space-between}
 .cc-room{font-size:17px;font-weight:800;letter-spacing:.2px}
-.clean-card.done .cc-room{text-decoration:line-through;color:#166534}
-.cc-check{font-size:20px;color:var(--success);font-weight:800}
 .cc-info{font-size:13.5px;color:var(--muted);margin-top:5px;font-weight:600}
 .cc-both{display:inline-block;margin-top:9px;font-size:11.5px;font-weight:800;
   color:#9a3412;background:#ffedd5;padding:5px 10px;border-radius:8px;letter-spacing:.2px}
@@ -85,8 +79,6 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
   font-family:inherit;transition:.12s;letter-spacing:.2px}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.55;cursor:not-allowed}
-.btn-done{background:var(--success);color:#fff}
-.btn-undone{background:#e2e8f0;color:#475569}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-danger{background:#fee2e2;color:#991b1b}
 .btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border)}
@@ -104,6 +96,8 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .cal-status:active{transform:scale(.92)}
 .cal-status.today{background:#e0e7ff}
 .cal-status.free{color:#cbd5e1;font-size:19px}
+.cal-status.needs-cleaning{background:#16a34a;color:#fff}
+.cal-status.no-cleaning{background:#e2e8f0;color:#64748b}
 .legend{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;
   font-size:12.5px;color:var(--muted);font-weight:600;padding:0 4px}
 .legend>div{display:flex;align-items:center;gap:7px}
@@ -252,7 +246,6 @@ const state = {
   settings: null,
   events: [],
   detectedNames: {},
-  completed: {},
   isAdmin: false,
   lastUpdate: null,
   fetching: false,
@@ -284,8 +277,6 @@ function loadAll() {
   state.settings = normalizeSettings(rawSettings || DEFAULT_SETTINGS);
   if (hasLegacyRoomSettings) saveSettingsLS();
 
-  try { state.completed = JSON.parse(localStorage.getItem('pulizie_completed') || '{}'); }
-  catch (e) { state.completed = {}; }
   try { state.events = JSON.parse(localStorage.getItem('pulizie_events') || '[]'); }
   catch (e) { state.events = []; }
   if (!Array.isArray(state.events)) state.events = [];
@@ -349,7 +340,6 @@ async function saveCloudSettings() {
   state.cloudError = null;
 }
 function saveSettingsLS() { localStorage.setItem('pulizie_settings_v3', JSON.stringify(state.settings)); }
-function saveCompletedLS() { localStorage.setItem('pulizie_completed', JSON.stringify(state.completed)); }
 function saveDetectedLS() { localStorage.setItem('pulizie_detected', JSON.stringify(state.detectedNames)); }
 
 /* ============================================================
@@ -462,6 +452,13 @@ function deduplicateEvents(events) {
   }
   return Array.from(byStay.values());
 }
+function retainEventsFromFailedFeeds(events, cachedEvents, failedTasks) {
+  const failedFeeds = new Set(failedTasks.map(task => `${task.roomId}|${task.sourceTag}`));
+  return [
+    ...events,
+    ...cachedEvents.filter(event => failedFeeds.has(`${event.roomId}|${event.source}`))
+  ];
+}
 
 /* ============================================================
    FETCH iCal (con timeout)
@@ -487,7 +484,13 @@ async function fetchICS(url) {
 
     const res = await fetch(target, { cache: 'no-store', signal: ctrl.signal });
     clearTimeout(timeout);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const responseText = await res.text();
+      if (/invalid token/i.test(responseText)) {
+        throw new Error('Token Booking non valido o scaduto: rigenera il link iCal in Booking e aggiornalo nelle impostazioni.');
+      }
+      throw new Error('HTTP ' + res.status);
+    }
     const text = await res.text();
     if (!text.includes('BEGIN:VCALENDAR')) {
       if (text.includes('<html') || text.includes('<!DOCTYPE')) {
@@ -568,6 +571,8 @@ async function refreshAll() {
 
   const collected = [];
   const errors = [];
+  const failedTasks = [];
+  const cachedEvents = state.events;
   const newDetected = {};
 
   for (const task of tasks) {
@@ -589,12 +594,15 @@ async function refreshAll() {
       }
     } catch (err) {
       errors.push(`${task.label}: ${err.message}`);
+      failedTasks.push(task);
     }
     state.fetchProgress.done++;
     render();
   }
 
-  state.events = deduplicateEvents(collected);
+  state.events = deduplicateEvents(
+    retainEventsFromFailedFeeds(collected, cachedEvents, failedTasks)
+  );
 
   Object.assign(state.detectedNames, newDetected);
   saveDetectedLS();
@@ -668,9 +676,6 @@ function statusLabel(s) {
   if (s === 'checkout') return 'Check-out / Pulizia';
   if (s === 'occupied') return 'Occupata';
   return 'Libera';
-}
-function isCompleted(dateKey, roomId) {
-  return !!state.completed[dateKey + '_' + roomId];
 }
 function cleanGuestName(summary) {
   if (!summary) return null;
@@ -760,9 +765,6 @@ function viewHome() {
   let total7 = 0;
   days.forEach(d => { total7 += getCleaningsForDate(toKey(d)).length; });
 
-  const allDone = cToday.length > 0 &&
-    cToday.every(c => isCompleted(toKey(days[0]), c.roomId));
-
   let html = '';
 
   html += `<div class="dashboard">
@@ -786,10 +788,6 @@ function viewHome() {
       <div class="stat-lbl">Pulizie prossimi 7 giorni</div>
     </div>
   </div>`;
-
-  if (allDone) {
-    html += `<div class="all-done">✓ TUTTE LE PULIZIE DI OGGI SONO COMPLETATE</div>`;
-  }
 
   if (state.fetching && state.fetchProgress.total > 0) {
     html += `<div class="empty">⏳ Aggiornamento calendari… (${state.fetchProgress.done}/${state.fetchProgress.total})</div>`;
@@ -845,12 +843,10 @@ function dayLabel(d, idx) {
 
 function renderCleaningCard(dk, c) {
   const room = state.settings.rooms[c.roomId];
-  const done = isCompleted(dk, c.roomId);
   const both = c.hasCheckin;
 
   let cls = 'clean-card';
   if (both) cls += ' both';
-  if (done) cls += ' done';
 
   const guest = state.settings.showGuestName ? cleanGuestName(c.guestOut) : null;
   const srcBadge = c.source
@@ -861,14 +857,10 @@ function renderCleaningCard(dk, c) {
   <div class="${cls}">
     <div class="cc-top">
       <div class="cc-room">🧹 ${escapeHtml(room.name.toUpperCase())}${srcBadge}</div>
-      ${done ? '<div class="cc-check">✓</div>' : ''}
     </div>
     <div class="cc-info">Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>
     ${both ? `<div class="cc-both">⚠️ CHECK-OUT + NUOVO CHECK-IN (${escapeHtml(state.settings.checkinTime)})</div>` : ''}
     ${guest ? `<div class="cc-guest">👤 ${escapeHtml(guest)}</div>` : ''}
-    ${done
-      ? `<button class="btn btn-undone" data-action="uncomplete" data-room="${c.roomId}" data-date="${dk}">Annulla completamento</button>`
-      : `<button class="btn btn-done" data-action="complete" data-room="${c.roomId}" data-date="${dk}">✓ PULIZIA COMPLETATA</button>`}
   </div>`;
 }
 
@@ -897,18 +889,17 @@ function viewCalendar() {
 
     for (let r = 0; r < state.settings.rooms.length; r++) {
       const st = getRoomStatus(r, dk);
-      html += `<div class="cal-cell cal-status ${statusClass(st)} ${isToday ? 'today' : ''}"
-        data-action="detail" data-room="${r}" data-date="${dk}">${statusIcon(st)}</div>`;
+      const needsCleaning = st === 'checkout' || st === 'both';
+      html += `<div class="cal-cell cal-status ${needsCleaning ? 'needs-cleaning' : 'no-cleaning'} ${isToday ? 'today' : ''}"
+        data-action="detail" data-room="${r}" data-date="${dk}">${needsCleaning ? '🧹' : ''}</div>`;
     }
   });
 
   html += `</div></div>`;
 
   html += `<div class="legend">
-    <div><span class="lg">🟢</span> Occupata</div>
-    <div><span class="lg">🧹</span> Check-out / Pulizia</div>
-    <div><span class="lg">⚠️</span> Check-out + Check-in</div>
-    <div><span class="lg">○</span> Libera</div>
+    <div><span class="lg">🟩</span> Da pulire</div>
+    <div><span class="lg">⬜</span> Nessuna pulizia</div>
   </div>`;
 
   html += `<div class="footer-note">Tocca una casella per vedere il dettaglio della giornata.</div>`;
@@ -992,7 +983,6 @@ function viewSettings() {
 
   html += `<div class="card">
     <button class="btn btn-primary" data-action="saveSettings">💾 Salva impostazioni</button>
-    <button class="btn btn-danger" data-action="resetCompleted">🗑️ Azzera pulizie completate</button>
     <button class="btn btn-outline" data-action="logout">🔒 Esci da amministratore</button>
   </div>`;
 
@@ -1015,8 +1005,6 @@ function showDetail(roomId, dk) {
   const d = fromKey(dk);
 
   const guest = state.settings.showGuestName && outEv ? cleanGuestName(outEv.summary) : null;
-  const needsCleaning = (st === 'checkout' || st === 'both');
-  const done = isCompleted(dk, roomId);
   const srcBadge = outEv && outEv.source
     ? `<span class="src-badge direct">${escapeHtml(outEv.source)}</span>`
     : '';
@@ -1030,12 +1018,6 @@ function showDetail(roomId, dk) {
       ${outEv ? `<div class="modal-row">🚪 Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>` : ''}
       ${inEv  ? `<div class="modal-row">🛎️ Nuovo check-in: ${escapeHtml(state.settings.checkinTime)}</div>` : ''}
       ${guest ? `<div class="modal-row">👤 ${escapeHtml(guest)}</div>` : ''}
-
-      ${needsCleaning ? (
-        done
-          ? `<button class="btn btn-undone" data-action="uncomplete" data-room="${roomId}" data-date="${dk}">Annulla completamento</button>`
-          : `<button class="btn btn-done" data-action="complete" data-room="${roomId}" data-date="${dk}">✓ PULIZIA COMPLETATA</button>`
-      ) : ''}
 
       <button class="btn btn-close" data-action="closeModal">Chiudi</button>
     </div>
@@ -1108,18 +1090,7 @@ document.getElementById('main').addEventListener('click', async e => {
   if (!btn) return;
   const action = btn.dataset.action;
 
-  if (action === 'complete') {
-    state.completed[btn.dataset.date + '_' + btn.dataset.room] = true;
-    saveCompletedLS();
-    render();
-    toast('Pulizia completata ✓');
-  }
-  else if (action === 'uncomplete') {
-    delete state.completed[btn.dataset.date + '_' + btn.dataset.room];
-    saveCompletedLS();
-    render();
-  }
-  else if (action === 'detail') {
+  if (action === 'detail') {
     showDetail(+btn.dataset.room, btn.dataset.date);
   }
   else if (action === 'saveSettings') {
@@ -1130,14 +1101,6 @@ document.getElementById('main').addEventListener('click', async e => {
     } catch (err) {
       state.cloudError = 'Impossibile salvare le impostazioni su Firebase: ' + err.message;
       render();
-    }
-  }
-  else if (action === 'resetCompleted') {
-    if (confirm('Azzerare tutte le pulizie segnate come completate?')) {
-      state.completed = {};
-      saveCompletedLS();
-      render();
-      toast('Pulizie completate azzerate');
     }
   }
   else if (action === 'refresh') {
@@ -1157,21 +1120,6 @@ document.getElementById('modal').addEventListener('click', e => {
   if (btn) {
     const action = btn.dataset.action;
     if (action === 'closeModal') { closeModal(); return; }
-    if (action === 'complete') {
-      state.completed[btn.dataset.date + '_' + btn.dataset.room] = true;
-      saveCompletedLS();
-      closeModal();
-      render();
-      toast('Pulizia completata ✓');
-      return;
-    }
-    if (action === 'uncomplete') {
-      delete state.completed[btn.dataset.date + '_' + btn.dataset.room];
-      saveCompletedLS();
-      closeModal();
-      render();
-      return;
-    }
     return;
   }
   if (e.target.hasAttribute('data-modal-bg')) closeModal();

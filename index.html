@@ -360,6 +360,10 @@ function addDays(d, n) {
   return x;
 }
 function shortDate(d) { return d.getDate() + ' ' + MESI_BREVI[d.getMonth()]; }
+function formatCalendarDay(dateKey) {
+  const date = fromKey(dateKey);
+  return `${shortDate(date)} ${date.getFullYear()}`;
+}
 function formatTime(iso) {
   const d = new Date(iso);
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -633,7 +637,7 @@ function getCleaningsForDate(dateKey) {
   const n = state.settings.rooms.length;
   for (let r = 0; r < n; r++) {
     const evs = state.events.filter(e => e.roomId === r);
-    const outEv = evs.find(e => e.end === dateKey && isReservationEvent(e));
+    const outEv = getCheckoutEvent(evs, dateKey);
     if (!outEv) continue;
     const inEv = evs.find(e => e.start === dateKey && isReservationEvent(e));
     res.push({
@@ -647,11 +651,19 @@ function getCleaningsForDate(dateKey) {
   return res;
 }
 
+function getCheckoutEvent(events, dateKey) {
+  const checkout = events.find(e => e.end === dateKey && isReservationEvent(e));
+  if (checkout) return checkout;
+
+  const hasCheckin = events.some(e => e.start === dateKey && isReservationEvent(e));
+  return hasCheckin ? events.find(e => e.end === dateKey) : undefined;
+}
+
 function getRoomStatus(roomId, dateKey) {
   const evs = state.events.filter(e => e.roomId === roomId);
   const reservations = evs.filter(isReservationEvent);
-  const checkout = reservations.some(e => e.end === dateKey);
   const checkin  = reservations.some(e => e.start === dateKey);
+  const checkout = Boolean(getCheckoutEvent(evs, dateKey));
   const occupied = evs.some(e => e.start <= dateKey && dateKey < e.end);
   if (checkout && checkin) return 'both';
   if (checkout) return 'checkout';
@@ -1000,7 +1012,8 @@ function showDetail(roomId, dk) {
   const room = state.settings.rooms[roomId];
   const st = getRoomStatus(roomId, dk);
   const evs = state.events.filter(e => e.roomId === roomId);
-  const outEv = evs.find(e => e.end === dk && isReservationEvent(e));
+  const dayEvents = evs.filter(e => e.start <= dk && dk <= e.end);
+  const outEv = getCheckoutEvent(evs, dk);
   const inEv  = evs.find(e => e.start === dk && isReservationEvent(e));
   const d = fromKey(dk);
 
@@ -1018,6 +1031,9 @@ function showDetail(roomId, dk) {
       ${outEv ? `<div class="modal-row">🚪 Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>` : ''}
       ${inEv  ? `<div class="modal-row">🛎️ Nuovo check-in: ${escapeHtml(state.settings.checkinTime)}</div>` : ''}
       ${guest ? `<div class="modal-row">👤 ${escapeHtml(guest)}</div>` : ''}
+      ${dayEvents.map(e => `
+        <div class="modal-row">Calendario ${escapeHtml(e.source || '')}: ${escapeHtml(formatCalendarDay(e.start))}
+          → DTEND ${escapeHtml(formatCalendarDay(e.end))}</div>`).join('')}
 
       <button class="btn btn-close" data-action="closeModal">Chiudi</button>
     </div>

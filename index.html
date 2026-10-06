@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#2563eb">
+<title>Pulizie — Gestione Stanze</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --primary:#2563eb;--primary-dark:#1e40af;--success:#16a34a;--success-bg:#f0fdf4;
+  --warning:#ea580c;--warning-bg:#fff7ed;--bg:#f1f5f9;--card:#fff;
+  --text:#0f172a;--muted:#64748b;--border:#e2e8f0;--danger:#dc2626;
+}
+html{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);font-size:16px;line-height:1.4;
+  padding-top:82px;padding-bottom:84px;min-height:100%;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- HEADER ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;
+  padding:10px 16px 9px;box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+.h-row{display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:18px;font-weight:800;letter-spacing:.3px}
+.h-actions{display:flex;gap:6px}
+.icon-btn{
+  background:rgba(255,255,255,.18);border:none;color:#fff;
+  width:36px;height:36px;border-radius:10px;font-size:17px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+.icon-btn:active{background:rgba(255,255,255,.34);transform:scale(.95)}
+.h-sub{font-size:11px;opacity:.88;margin-top:5px;font-weight:500}
+
+/* ---------- MAIN ---------- */
+main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
+.view-title{font-size:20px;font-weight:800;margin:4px 0 14px;padding-left:2px}
+.section-title{font-size:12px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 8px}
+
+/* ---------- DASHBOARD ---------- */
+.dashboard{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.stat{background:#fff;border-radius:14px;padding:12px 6px;text-align:center;
+  box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat.wide{grid-column:1 / -1;padding:14px}
+.stat-num{font-size:26px;font-weight:800;color:var(--primary);line-height:1}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.3px}
+.stat-date{font-size:10px;color:var(--muted);margin-top:2px;font-weight:600}
+
+.all-done{background:var(--success);color:#fff;padding:14px 16px;border-radius:14px;
+  font-weight:800;text-align:center;margin-bottom:16px;font-size:13.5px;
+  box-shadow:0 4px 14px rgba(22,163,74,.35);letter-spacing:.2px}
+
+.error-box{background:#fef2f2;color:#991b1b;padding:12px 14px;border-radius:12px;
+  font-size:12.5px;margin-bottom:14px;border-left:4px solid var(--danger);line-height:1.5}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;line-height:1.6}
+.no-clean{color:#94a3b8;font-size:13px;font-style:italic;padding:4px 6px 10px}
+
+/* ---------- DAY BLOCK ---------- */
+.day-block{margin-bottom:20px}
+.day-header{font-size:12.5px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;padding-left:4px}
+
+/* ---------- CLEANING CARD ---------- */
+.clean-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid var(--primary);
+  transition:.15s}
+.clean-card.both{border-left-color:var(--warning);background:var(--warning-bg)}
+.clean-card.done{border-left-color:var(--success);background:var(--success-bg);opacity:.85}
+.cc-top{display:flex;align-items:center;justify-content:space-between}
+.cc-room{font-size:17px;font-weight:800;letter-spacing:.2px}
+.clean-card.done .cc-room{text-decoration:line-through;color:#166534}
+.cc-check{font-size:20px;color:var(--success);font-weight:800}
+.cc-info{font-size:13.5px;color:var(--muted);margin-top:5px;font-weight:600}
+.cc-both{display:inline-block;margin-top:9px;font-size:11.5px;font-weight:800;
+  color:#9a3412;background:#ffedd5;padding:5px 10px;border-radius:8px;letter-spacing:.2px}
+.cc-guest{font-size:13px;color:var(--muted);margin-top:7px}
+
+/* ---------- BUTTONS ---------- */
+.btn{display:block;width:100%;border:none;border-radius:12px;padding:14px;
+  font-size:15.5px;font-weight:800;cursor:pointer;margin-top:12px;
+  font-family:inherit;transition:.12s;letter-spacing:.2px}
+.btn:active{transform:scale(.98)}
+.btn-done{background:var(--success);color:#fff}
+.btn-done:active{background:#15803d}
+.btn-undone{background:#e2e8f0;color:#475569}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-danger{background:#fee2e2;color:#991b1b}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border)}
+.btn-close{background:#f1f5f9;color:var(--muted)}
+
+/* ---------- CALENDAR ---------- */
+.cal-wrap{background:#fff;border-radius:16px;padding:8px;
+  box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.cal-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr 1fr;gap:4px}
+.cal-cell{display:flex;align-items:center;justify-content:center;
+  padding:9px 2px;border-radius:9px;font-size:13px;font-weight:700;min-height:42px}
+.cal-head{font-size:10.5px;color:var(--muted);text-transform:uppercase;
+  font-weight:800;background:#f8fafc;letter-spacing:.3px}
+.cal-date{justify-content:flex-start;padding-left:9px;font-size:11.5px;
+  background:#f8fafc;color:var(--text)}
+.cal-date.today{background:var(--primary);color:#fff}
+.cal-status{font-size:16px;cursor:pointer;background:#f8fafc;transition:.12s}
+.cal-status:active{transform:scale(.92)}
+.cal-status.today{background:#e0e7ff}
+.cal-status.free{color:#cbd5e1;font-size:19px}
+
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;
+  font-size:12.5px;color:var(--muted);font-weight:600;padding:0 4px}
+.legend>div{display:flex;align-items:center;gap:7px}
+.legend .lg{font-size:16px}
+
+/* ---------- SETTINGS ---------- */
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-title{font-size:15px;font-weight:800;margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--muted);margin-bottom:10px}
+.lbl{display:block;font-size:11.5px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.4px;margin:12px 0 6px}
+.lbl:first-child{margin-top:0}
+.inp{width:100%;padding:12px 13px;border:1.5px solid var(--border);border-radius:11px;
+  font-size:14px;font-family:inherit;background:#f8fafc;color:var(--text);
+  transition:.15s;outline:none}
+.inp:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.row-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  font-size:14px;font-weight:600;cursor:pointer;padding:4px 0}
+.row-toggle input{width:22px;height:22px;accent-color:var(--primary);cursor:pointer}
+.footer-note{text-align:center;font-size:11.5px;color:#94a3b8;padding:16px 10px 4px;line-height:1.5}
+
+/* ---------- NAV ---------- */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
+  display:flex;box-shadow:0 -2px 14px rgba(0,0,0,.09);
+  padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;background:none;border:none;padding:8px 4px 10px;display:flex;
+  flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+  color:var(--muted);font-family:inherit;transition:.15s}
+.nav-btn.active{color:var(--primary)}
+.nav-btn:active{transform:scale(.94)}
+.nav-icon{font-size:21px;line-height:1}
+.nav-label{font-size:10.5px;font-weight:800;letter-spacing:.2px}
+
+/* ---------- MODAL ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;padding:14px;
+  animation:fadeIn .15s ease}
+.modal{background:#fff;border-radius:20px;padding:22px;width:100%;max-width:480px;
+  animation:slideUp .22s cubic-bezier(.16,1,.3,1);max-height:85vh;overflow-y:auto}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:3px}
+.modal-date{font-size:13px;color:var(--muted);margin-bottom:16px;font-weight:600}
+.modal-status{display:inline-block;padding:8px 14px;border-radius:10px;
+  font-size:14px;font-weight:800;margin-bottom:14px;background:#f1f5f9}
+.modal-status.checkout{background:#dbeafe;color:#1e40af}
+.modal-status.both{background:#ffedd5;color:#9a3412}
+.modal-status.occupied{background:#dcfce7;color:#166534}
+.modal-status.free{background:#f1f5f9;color:#64748b}
+.modal-row{font-size:14.5px;font-weight:600;padding:10px 0;
+  border-bottom:1px solid var(--border);color:var(--text)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(min-width:480px){.modal-bg{align-items:center}}
+
+/* ---------- TOAST ---------- */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#0f172a;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;
+  font-weight:700;z-index:300;opacity:0;pointer-events:none;transition:.25s;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-row">
+    <div class="brand">🧹 Pulizie</div>
+    <div class="h-actions">
+      <button class="icon-btn" id="refreshBtn" title="Aggiorna">⟳</button>
+      <button class="icon-btn" id="lockBtn" title="Accesso">🔒</button>
+    </div>
+  </div>
+  <div class="h-sub" id="lastUpdate">Ultimo aggiornamento: —</div>
+</header>
+
+<main id="main"></main>
+<nav id="nav"></nav>
+<div id="modal"></div>
+
+<script>
+/* ============================================================
+   COSTANTI
+============================================================ */
+const PIN_ADMIN = '1234';
+const GIORNI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+              'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const MESI_BREVI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+const DEFAULT_SETTINGS = {
+  rooms: [
+    { name:'Stanza 1', airbnb:'', booking:'' },
+    { name:'Stanza 2', airbnb:'', booking:'' },
+    { name:'Stanza 3', airbnb:'', booking:'' },
+    { name:'Stanza 4', airbnb:'', booking:'' }
+  ],
+  showGuestName: false,
+  checkoutTime: '10:00',
+  checkinTime: '15:00',
+  proxy: 'https://api.allorigins.win/raw?url='
+};
+
+/* ============================================================
+   STATO
+============================================================ */
+const state = {
+  view: 'home',
+  settings: null,
+  events: [],        // {roomId, start, end, summary, source}
+  completed: {},     // 'YYYY-MM-DD_roomId' -> true
+  isAdmin: false,
+  lastUpdate: null,
+  loading: false,
+  errorMsg: null
+};
+
+/* ============================================================
+   PERSISTENZA
+============================================================ */
+function loadAll() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('pulizie_settings') || 'null');
+    state.settings = raw
+      ? Object.assign({}, DEFAULT_SETTINGS, raw, { rooms: raw.rooms || [] })
+      : JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  } catch (e) {
+    state.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  }
+  while (state.settings.rooms.length < 4) {
+    state.settings.rooms.push({ name:'Stanza ' + (state.settings.rooms.length + 1), airbnb:'', booking:'' });
+  }
+  try { state.completed = JSON.parse(localStorage.getItem('pulizie_completed') || '{}'); }
+  catch (e) { state.completed = {}; }
+  try { state.events = JSON.parse(localStorage.getItem('pulizie_events') || '[]'); }
+  catch (e) { state.events = []; }
+  state.lastUpdate = localStorage.getItem('pulizie_lastupdate') || null;
+  state.isAdmin = localStorage.getItem('pulizie_admin') === '1';
+}
+function saveSettingsLS() { localStorage.setItem('pulizie_settings', JSON.stringify(state.settings)); }
+function saveCompletedLS() { localStorage.setItem('pulizie_completed', JSON.stringify(state.completed)); }
+
+/* ============================================================
+   UTILITÀ DATE
+============================================================ */
+function toKey(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+function fromKey(k) {
+  const [y, m, d] = k.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function addDays(d, n) {
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  x.setDate(x.getDate() + n);
+  return x;
+}
+function shortDate(d) { return d.getDate() + ' ' + MESI_BREVI[d.getMonth()]; }
+function formatTime(iso) {
+  const d = new Date(iso);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+function formatDateTime(iso) {
+  const d = new Date(iso);
+  return d.getDate() + ' ' + MESI_BREVI[d.getMonth()] + ' ' +
+    String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+/* ============================================================
+   ESCAPE
+============================================================ */
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+const escapeAttr = escapeHtml;
+
+/* ============================================================
+   PARSER iCAL
+============================================================ */
+function parseICS(text) {
+  text = text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '').replace(/\r/g, '');
+  const lines = text.split('\n');
+  const events = [];
+  let cur = null;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (line === 'BEGIN:VEVENT') { cur = {}; continue; }
+    if (line === 'END:VEVENT') { if (cur) events.push(cur); cur = null; continue; }
+    if (!cur) continue;
+    const idx = line.indexOf(':');
+    if (idx < 0) continue;
+    const key = line.substring(0, idx);
+    const val = line.substring(idx + 1);
+    const name = key.split(';')[0].toUpperCase();
+    if (name === 'DTSTART') cur.start = extractDate(val);
+    else if (name === 'DTEND') cur.end = extractDate(val);
+    else if (name === 'SUMMARY') cur.summary = val;
+  }
+  return events.filter(e => e.start && e.end);
+}
+function extractDate(val) {
+  const m = String(val).trim().match(/^(\d{4})(\d{2})(\d{2})/);
+  if (!m) return null;
+  return `${m[1]}-${m[2]}-${m[3]}`;
+}
+
+/* ============================================================
+   RECUPERO iCal
+============================================================ */
+async function fetchICS(url) {
+  const proxy = (state.settings.proxy || '').trim();
+  const target = proxy ? proxy + encodeURIComponent(url) : url;
+  const retryableStatuses = [408, 500, 502, 503, 504];
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(target, { cache: 'no-store' });
+      if (!res.ok) {
+        if (!retryableStatuses.includes(res.status) || attempt === 2) {
+          throw new Error('HTTP ' + res.status);
+        }
+      } else {
+        const text = await res.text();
+        if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Risposta non valida');
+        return text;
+      }
+    } catch (err) {
+      if (!(err instanceof TypeError) || attempt === 2) throw err;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+  }
+}
+
+async function refreshAll() {
+  if (state.loading) return;
+  state.loading = true;
+  state.errorMsg = null;
+  render();
+
+  const collected = [];
+  const errors = [];
+  const failedSources = new Set();
+  const rooms = state.settings.rooms;
+
+  for (let i = 0; i < rooms.length; i++) {
+    const room = rooms[i];
+    const sources = [];
+    if (room.airbnb)  sources.push({ tag: 'Airbnb',  url: room.airbnb });
+    if (room.booking) sources.push({ tag: 'Booking', url: room.booking });
+
+    for (const src of sources) {
+      try {
+        const text = await fetchICS(src.url);
+        const evs = parseICS(text);
+        for (const e of evs) {
+          collected.push({
+            roomId: i,
+            start: e.start,
+            end: e.end,
+            summary: e.summary || '',
+            source: src.tag
+          });
+        }
+      } catch (err) {
+        failedSources.add(`${i}|${src.tag}`);
+        errors.push(`${room.name} · ${src.tag}: ${err.message}`);
+      }
+    }
+  }
+
+  // Deduplicazione (stessa stanza + stesso periodo = stessa prenotazione)
+  const map = new Map();
+  const retained = state.events.filter(e => failedSources.has(`${e.roomId}|${e.source}`));
+  for (const e of [...retained, ...collected]) {
+    const k = `${e.roomId}|${e.start}|${e.end}`;
+    if (!map.has(k)) map.set(k, e);
+  }
+  state.events = Array.from(map.values());
+
+  state.lastUpdate = new Date().toISOString();
+  localStorage.setItem('pulizie_events', JSON.stringify(state.events));
+  localStorage.setItem('pulizie_lastupdate', state.lastUpdate);
+
+  state.loading = false;
+  state.errorMsg = errors.length ? errors.join('\n') : null;
+  render();
+}
+
+/* ============================================================
+   LOGICA PULIZIE / STATI
+============================================================ */
+function getCleaningsForDate(dateKey) {
+  const res = [];
+  const n = state.settings.rooms.length;
+  for (let r = 0; r < n; r++) {
+    const evs = state.events.filter(e => e.roomId === r);
+    const outEv = evs.find(e => e.end === dateKey);
+    if (!outEv) continue;
+    const inEv = evs.find(e => e.start === dateKey);
+    res.push({
+      roomId: r,
+      hasCheckin: !!inEv,
+      guestOut: outEv.summary || '',
+      guestIn: inEv ? (inEv.summary || '') : ''
+    });
+  }
+  return res;
+}
+
+function getRoomStatus(roomId, dateKey) {
+  const evs = state.events.filter(e => e.roomId === roomId);
+  const checkout = evs.some(e => e.end === dateKey);
+  const checkin  = evs.some(e => e.start === dateKey);
+  const occupied = evs.some(e => e.start <= dateKey && dateKey < e.end);
+  if (checkout && checkin) return 'both';
+  if (checkout) return 'checkout';
+  if (occupied) return 'occupied';
+  return 'free';
+}
+
+function statusIcon(s) {
+  if (s === 'both') return '⚠️';
+  if (s === 'checkout') return '🧹';
+  if (s === 'occupied') return '🟢';
+  return '○';
+}
+function statusClass(s) {
+  if (s === 'both') return 'both';
+  if (s === 'checkout') return 'checkout';
+  if (s === 'occupied') return 'occupied';
+  return 'free';
+}
+function statusLabel(s) {
+  if (s === 'both') return 'Check-out + Nuovo check-in';
+  if (s === 'checkout') return 'Check-out / Pulizia';
+  if (s === 'occupied') return 'Occupata';
+  return 'Libera';
+}
+
+function isCompleted(dateKey, roomId) {
+  return !!state.completed[dateKey + '_' + roomId];
+}
+
+function cleanGuestName(summary) {
+  if (!summary) return null;
+  const s = summary.trim();
+  if (!s) return null;
+  if (/^(reserved|not available|blocked|closed|unavailable|airbnb|booking\.?com?|n\/a)$/i.test(s)) return null;
+  if (/not available|blocked|reserved|closed/i.test(s)) return null;
+  return s;
+}
+
+function shortName(name) {
+  const m = String(name).match(/\d+/);
+  if (m) return m[0];
+  return String(name).substring(0, 3);
+}
+
+/* ============================================================
+   RENDER PRINCIPALE
+============================================================ */
+function render() {
+  const lu = document.getElementById('lastUpdate');
+  lu.textContent = 'Ultimo aggiornamento: ' +
+    (state.lastUpdate ? formatTime(state.lastUpdate) : '—');
+
+  const lockBtn = document.getElementById('lockBtn');
+  lockBtn.textContent = state.isAdmin ? '🔓' : '🔒';
+
+  renderNav();
+
+  const main = document.getElementById('main');
+  if (state.view === 'home') main.innerHTML = viewHome();
+  else if (state.view === 'calendar') main.innerHTML = viewCalendar();
+  else if (state.view === 'settings') main.innerHTML = viewSettings();
+}
+
+function renderNav() {
+  const items = [
+    { id:'home',     icon:'🏠', label:'Pulizie' },
+    { id:'calendar', icon:'📅', label:'Calendario' }
+  ];
+  if (state.isAdmin) items.push({ id:'settings', icon:'⚙️', label:'Impostazioni' });
+
+  document.getElementById('nav').innerHTML = items.map(it => `
+    <button class="nav-btn ${state.view === it.id ? 'active' : ''}" data-view="${it.id}">
+      <span class="nav-icon">${it.icon}</span>
+      <span class="nav-label">${it.label}</span>
+    </button>
+  `).join('');
+}
+
+/* ============================================================
+   VIEW: HOME — PULIZIE
+============================================================ */
+function viewHome() {
+  const today = new Date();
+  const days = [];
+  for (let i = 0; i < 7; i++) days.push(addDays(today, i));
+
+  const cToday = getCleaningsForDate(toKey(days[0]));
+  const cTom   = getCleaningsForDate(toKey(days[1]));
+  const cAfter = getCleaningsForDate(toKey(days[2]));
+
+  let total7 = 0;
+  days.forEach(d => { total7 += getCleaningsForDate(toKey(d)).length; });
+
+  const allDone = cToday.length > 0 &&
+    cToday.every(c => isCompleted(toKey(days[0]), c.roomId));
+
+  let html = '';
+
+  /* Dashboard */
+  html += `<div class="dashboard">
+    <div class="stat">
+      <div class="stat-num">${cToday.length}</div>
+      <div class="stat-lbl">Pulizie oggi</div>
+      <div class="stat-date">${shortDate(days[0])}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">${cTom.length}</div>
+      <div class="stat-lbl">Pulizie domani</div>
+      <div class="stat-date">${shortDate(days[1])}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">${cAfter.length}</div>
+      <div class="stat-lbl">Dopodomani</div>
+      <div class="stat-date">${shortDate(days[2])}</div>
+    </div>
+    <div class="stat wide">
+      <div class="stat-num">${total7}</div>
+      <div class="stat-lbl">Pulizie prossimi 7 giorni</div>
+    </div>
+  </div>`;
+
+  if (allDone) {
+    html += `<div class="all-done">✓ TUTTE LE PULIZIE DI OGGI SONO COMPLETATE</div>`;
+  }
+
+  if (state.loading) {
+    html += `<div class="empty">⏳ Aggiornamento calendari in corso…</div>`;
+  }
+
+  if (state.errorMsg) {
+    html += `<div class="error-box">⚠️ <strong>Errore recupero calendari</strong><br>${
+      escapeHtml(state.errorMsg).replace(/\n/g, '<br>')}</div>`;
+  }
+
+  const noUrls = state.settings.rooms.every(r => !r.airbnb && !r.booking);
+  if (noUrls) {
+    html += `<div class="empty">
+      Nessun calendario configurato.<br><br>
+      ${state.isAdmin
+        ? 'Vai su <strong>⚙️ Impostazioni</strong> per inserire gli URL iCal di Airbnb e Booking.com.'
+        : 'Contatta l\'amministratore per configurare i calendari.'}
+    </div>`;
+    return html;
+  }
+
+  /* Giorni */
+  days.forEach((d, idx) => {
+    const dk = toKey(d);
+    const cleanings = getCleaningsForDate(dk);
+
+    html += `<div class="day-block">`;
+    html += `<div class="day-header">${dayLabel(d, idx)}</div>`;
+
+    if (cleanings.length === 0) {
+      html += `<div class="no-clean">Nessuna pulizia prevista</div>`;
+    } else {
+      cleanings.forEach(c => { html += renderCleaningCard(dk, c); });
+    }
+    html += `</div>`;
+  });
+
+  return html;
+}
+
+function dayLabel(d, idx) {
+  const base =
+    idx === 0 ? 'OGGI' :
+    idx === 1 ? 'DOMANI' :
+    idx === 2 ? 'DOPODOMANI' :
+    GIORNI[d.getDay()].toUpperCase();
+  return `${base} — ${d.getDate()} ${MESI[d.getMonth()].toUpperCase()}`;
+}
+
+function renderCleaningCard(dk, c) {
+  const room = state.settings.rooms[c.roomId];
+  const done = isCompleted(dk, c.roomId);
+  const both = c.hasCheckin;
+
+  let cls = 'clean-card';
+  if (both) cls += ' both';
+  if (done) cls += ' done';
+
+  const guest = state.settings.showGuestName ? cleanGuestName(c.guestOut) : null;
+
+  return `
+  <div class="${cls}">
+    <div class="cc-top">
+      <div class="cc-room">🧹 ${escapeHtml(room.name.toUpperCase())}</div>
+      ${done ? '<div class="cc-check">✓</div>' : ''}
+    </div>
+    <div class="cc-info">Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>
+    ${both ? `<div class="cc-both">⚠️ CHECK-OUT + NUOVO CHECK-IN (${escapeHtml(state.settings.checkinTime)})</div>` : ''}
+    ${guest ? `<div class="cc-guest">👤 ${escapeHtml(guest)}</div>` : ''}
+    ${done
+      ? `<button class="btn btn-undone" data-action="uncomplete" data-room="${c.roomId}" data-date="${dk}">Annulla completamento</button>`
+      : `<button class="btn btn-done" data-action="complete" data-room="${c.roomId}" data-date="${dk}">✓ PULIZIA COMPLETATA</button>`}
+  </div>`;
+}
+
+/* ============================================================
+   VIEW: CALENDARIO 15 GIORNI
+============================================================ */
+function viewCalendar() {
+  const today = new Date();
+  const days = [];
+  for (let i = 0; i < 15; i++) days.push(addDays(today, i));
+
+  let html = `<div class="view-title">📅 Prossimi 15 giorni</div>`;
+  html += `<div class="cal-wrap"><div class="cal-grid">`;
+
+  html += `<div class="cal-cell cal-head">Data</div>`;
+  state.settings.rooms.forEach(r => {
+    html += `<div class="cal-cell cal-head">${escapeHtml(shortName(r.name))}</div>`;
+  });
+
+  days.forEach((d, idx) => {
+    const dk = toKey(d);
+    const isToday = idx === 0;
+    html += `<div class="cal-cell cal-date ${isToday ? 'today' : ''}">
+      ${d.getDate()} ${MESI_BREVI[d.getMonth()]}
+    </div>`;
+
+    for (let r = 0; r < state.settings.rooms.length; r++) {
+      const st = getRoomStatus(r, dk);
+      html += `<div class="cal-cell cal-status ${statusClass(st)} ${isToday ? 'today' : ''}"
+        data-action="detail" data-room="${r}" data-date="${dk}">${statusIcon(st)}</div>`;
+    }
+  });
+
+  html += `</div></div>`;
+
+  html += `<div class="legend">
+    <div><span class="lg">🟢</span> Occupata</div>
+    <div><span class="lg">🧹</span> Check-out / Pulizia</div>
+    <div><span class="lg">⚠️</span> Check-out + Check-in</div>
+    <div><span class="lg">○</span> Libera</div>
+  </div>`;
+
+  html += `<div class="footer-note">Tocca una casella per vedere il dettaglio della giornata.</div>`;
+
+  return html;
+}
+
+/* ============================================================
+   VIEW: IMPOSTAZIONI (solo admin)
+============================================================ */
+function viewSettings() {
+  if (!state.isAdmin) {
+    return `<div class="empty">🔒 Accesso riservato all'amministratore.</div>`;
+  }
+
+  let html = `<div class="view-title">⚙️ Impostazioni</div>`;
+
+  /* Aggiornamento */
+  html += `<div class="card">
+    <div class="card-title">Aggiornamento calendari</div>
+    <div class="card-sub">Ultimo aggiornamento: ${
+      state.lastUpdate ? formatDateTime(state.lastUpdate) : '—'}</div>
+    <button class="btn btn-primary" data-action="refresh">⟳ Aggiorna ora</button>
+  </div>`;
+
+  /* Stanze */
+  html += `<div class="section-title">Stanze e calendari iCal</div>`;
+  state.settings.rooms.forEach((r, i) => {
+    html += `<div class="card">
+      <label class="lbl">Nome stanza ${i + 1}</label>
+      <input class="inp" type="text" value="${escapeAttr(r.name)}"
+        data-room-name="${i}" placeholder="Stanza ${i + 1}">
+
+      <label class="lbl">URL iCal Airbnb</label>
+      <input class="inp" type="url" value="${escapeAttr(r.airbnb)}"
+        data-room-airbnb="${i}" placeholder="https://www.airbnb.it/calendar/ical/....ics">
+
+      <label class="lbl">URL iCal Booking.com</label>
+      <input class="inp" type="url" value="${escapeAttr(r.booking)}"
+        data-room-booking="${i}" placeholder="https://ical.booking.com/v1/export?t=....">
+    </div>`;
+  });
+
+  /* Opzioni */
+  html += `<div class="section-title">Opzioni</div>`;
+  html += `<div class="card">
+    <label class="row-toggle">
+      <span>Mostra nome ospite (se disponibile)</span>
+      <input type="checkbox" ${state.settings.showGuestName ? 'checked' : ''}
+        data-toggle="showGuestName">
+    </label>
+    <label class="lbl">Orario check-out</label>
+    <input class="inp" type="time" value="${escapeAttr(state.settings.checkoutTime)}"
+      data-toggle="checkoutTime">
+    <label class="lbl">Orario check-in</label>
+    <input class="inp" type="time" value="${escapeAttr(state.settings.checkinTime)}"
+      data-toggle="checkinTime">
+  </div>`;
+
+  /* Proxy */
+  html += `<div class="card">
+    <label class="lbl">Proxy CORS (recupero iCal)</label>
+    <input class="inp" type="text" value="${escapeAttr(state.settings.proxy)}"
+      data-toggle="proxy" placeholder="https://api.allorigins.win/raw?url=">
+    <div class="hint">I browser bloccano le richieste dirette verso server esterni.
+      Il proxy permette di scaricare i calendari iCal. Lascia vuoto per disattivarlo.</div>
+  </div>`;
+
+  /* Azioni */
+  html += `<div class="card">
+    <button class="btn btn-primary" data-action="saveSettings">💾 Salva impostazioni</button>
+    <button class="btn btn-danger" data-action="resetCompleted">🗑️ Azzera pulizie completate</button>
+    <button class="btn btn-outline" data-action="logout">🔒 Esci da amministratore</button>
+  </div>`;
+
+  html += `<div class="footer-note">
+    Le pulizie vengono generate automaticamente dal giorno di check-out di ogni prenotazione.<br>
+    Nessun dato economico o sensibile viene mostrato al personale.
+  </div>`;
+
+  return html;
+}
+
+/* ============================================================
+   MODAL DETTAGLIO
+============================================================ */
+function showDetail(roomId, dk) {
+  const room = state.settings.rooms[roomId];
+  const st = getRoomStatus(roomId, dk);
+  const evs = state.events.filter(e => e.roomId === roomId);
+  const outEv = evs.find(e => e.end === dk);
+  const inEv  = evs.find(e => e.start === dk);
+  const d = fromKey(dk);
+
+  const guest = state.settings.showGuestName && outEv ? cleanGuestName(outEv.summary) : null;
+  const needsCleaning = (st === 'checkout' || st === 'both');
+  const done = isCompleted(dk, roomId);
+
+  let html = `<div class="modal-bg" data-modal-bg>
+    <div class="modal">
+      <div class="modal-title">${escapeHtml(room.name)}</div>
+      <div class="modal-date">${GIORNI[d.getDay()]} ${d.getDate()} ${MESI[d.getMonth()]} ${d.getFullYear()}</div>
+      <div class="modal-status ${statusClass(st)}">${statusIcon(st)} ${statusLabel(st)}</div>
+
+      ${outEv ? `<div class="modal-row">🚪 Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>` : ''}
+      ${inEv  ? `<div class="modal-row">🛎️ Nuovo check-in: ${escapeHtml(state.settings.checkinTime)}</div>` : ''}
+      ${guest ? `<div class="modal-row">👤 ${escapeHtml(guest)}</div>` : ''}
+
+      ${needsCleaning ? (
+        done
+          ? `<button class="btn btn-undone" data-action="uncomplete" data-room="${roomId}" data-date="${dk}">Annulla completamento</button>`
+          : `<button class="btn btn-done" data-action="complete" data-room="${roomId}" data-date="${dk}">✓ PULIZIA COMPLETATA</button>`
+      ) : ''}
+
+      <button class="btn btn-close" data-action="closeModal">Chiudi</button>
+    </div>
+  </div>`;
+
+  document.getElementById('modal').innerHTML = html;
+}
+function closeModal() { document.getElementById('modal').innerHTML = ''; }
+
+/* ============================================================
+   SALVATAGGIO IMPOSTAZIONI
+============================================================ */
+function saveSettingsFromForm() {
+  document.querySelectorAll('[data-room-name]').forEach(inp => {
+    const i = +inp.dataset.roomName;
+    state.settings.rooms[i].name = inp.value.trim() || ('Stanza ' + (i + 1));
+  });
+  document.querySelectorAll('[data-room-airbnb]').forEach(inp => {
+    state.settings.rooms[+inp.dataset.roomAirbnb].airbnb = inp.value.trim();
+  });
+  document.querySelectorAll('[data-room-booking]').forEach(inp => {
+    state.settings.rooms[+inp.dataset.roomBooking].booking = inp.value.trim();
+  });
+
+  const gs = document.querySelector('[data-toggle="showGuestName"]');
+  if (gs) state.settings.showGuestName = gs.checked;
+
+  const co = document.querySelector('[data-toggle="checkoutTime"]');
+  if (co && co.value) state.settings.checkoutTime = co.value;
+
+  const ci = document.querySelector('[data-toggle="checkinTime"]');
+  if (ci && ci.value) state.settings.checkinTime = ci.value;
+
+  const px = document.querySelector('[data-toggle="proxy"]');
+  if (px) state.settings.proxy = px.value.trim();
+
+  saveSettingsLS();
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+let toastTimer;
+function toast(msg) {
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ============================================================
+   EVENTI
+============================================================ */
+document.getElementById('nav').addEventListener('click', e => {
+  const btn = e.target.closest('[data-view]');
+  if (!btn) return;
+  state.view = btn.dataset.view;
+  render();
+  window.scrollTo(0, 0);
+});
+
+document.getElementById('main').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action = btn.dataset.action;
+
+  if (action === 'complete') {
+    state.completed[btn.dataset.date + '_' + btn.dataset.room] = true;
+    saveCompletedLS();
+    render();
+    toast('Pulizia completata ✓');
+  }
+  else if (action === 'uncomplete') {
+    delete state.completed[btn.dataset.date + '_' + btn.dataset.room];
+    saveCompletedLS();
+    render();
+  }
+  else if (action === 'detail') {
+    showDetail(+btn.dataset.room, btn.dataset.date);
+  }
+  else if (action === 'saveSettings') {
+    saveSettingsFromForm();
+    toast('Impostazioni salvate 💾');
+    refreshAll();
+  }
+  else if (action === 'resetCompleted') {
+    if (confirm('Azzerare tutte le pulizie segnate come completate?')) {
+      state.completed = {};
+      saveCompletedLS();
+      render();
+      toast('Pulizie completate azzerate');
+    }
+  }
+  else if (action === 'refresh') {
+    refreshAll();
+  }
+  else if (action === 'logout') {
+    state.isAdmin = false;
+    localStorage.removeItem('pulizie_admin');
+    state.view = 'home';
+    render();
+    toast('Modalità amministratore disattivata');
+  }
+});
+
+document.getElementById('modal').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (btn) {
+    const action = btn.dataset.action;
+    if (action === 'closeModal') { closeModal(); return; }
+    if (action === 'complete') {
+      state.completed[btn.dataset.date + '_' + btn.dataset.room] = true;
+      saveCompletedLS();
+      closeModal();
+      render();
+      toast('Pulizia completata ✓');
+      return;
+    }
+    if (action === 'uncomplete') {
+      delete state.completed[btn.dataset.date + '_' + btn.dataset.room];
+      saveCompletedLS();
+      closeModal();
+      render();
+      return;
+    }
+    return;
+  }
+  if (e.target.hasAttribute('data-modal-bg')) closeModal();
+});
+
+document.getElementById('refreshBtn').addEventListener('click', refreshAll);
+
+document.getElementById('lockBtn').addEventListener('click', () => {
+  if (state.isAdmin) {
+    state.isAdmin = false;
+    localStorage.removeItem('pulizie_admin');
+    if (state.view === 'settings') state.view = 'home';
+    render();
+    toast('Modalità amministratore disattivata');
+  } else {
+    const pin = prompt('Inserisci il codice amministratore:');
+    if (pin === null) return;
+    if (pin === PIN_ADMIN) {
+      state.isAdmin = true;
+      localStorage.setItem('pulizie_admin', '1');
+      render();
+      toast('Modalità amministratore attiva ✓');
+    } else {
+      alert('Codice errato');
+    }
+  }
+});
+
+/* ============================================================
+   AVVIO + AGGIORNAMENTO AUTOMATICO
+============================================================ */
+loadAll();
+render();
+refreshAll();
+
+// Aggiornamento automatico ogni 30 minuti
+setInterval(() => { refreshAll(); }, 30 * 60 * 1000);
+
+// Aggiorna quando l'app torna in primo piano
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const lu = state.lastUpdate ? new Date(state.lastUpdate).getTime() : 0;
+    if (Date.now() - lu > 10 * 60 * 1000) refreshAll();
+  }
+});
+</script>
+</body>
+</html>

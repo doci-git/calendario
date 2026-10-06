@@ -655,8 +655,14 @@ function getCheckoutEvent(events, dateKey) {
   const checkout = events.find(e => e.end === dateKey && isReservationEvent(e));
   if (checkout) return checkout;
 
-  const hasCheckin = events.some(e => e.start === dateKey && isReservationEvent(e));
-  return hasCheckin ? events.find(e => e.end === dateKey) : undefined;
+  const hasBookingCheckin = events.some(
+    e => e.source === 'Booking' && e.start === dateKey && isReservationEvent(e)
+  );
+  if (!hasBookingCheckin) return undefined;
+
+  return events.find(
+    e => e.source === 'Airbnb' && e.end === dateKey && isBlockedEvent(e)
+  );
 }
 
 function getRoomStatus(roomId, dateKey) {

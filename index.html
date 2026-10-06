@@ -180,7 +180,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
   <div class="h-row">
     <div class="brand">🧹 Pulizie</div>
     <div class="h-actions">
-      <button class="icon-btn" id="refreshBtn" title="Aggiorna">⟳</button>
       <button class="icon-btn" id="lockBtn" title="Accesso">🔒</button>
     </div>
   </div>
@@ -203,15 +202,14 @@ const MESI_BREVI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott',
 
 const DEFAULT_SETTINGS = {
   rooms: [
-    { name:'Stanza 1', airbnb:'', booking:'' },
-    { name:'Stanza 2', airbnb:'', booking:'' },
-    { name:'Stanza 3', airbnb:'', booking:'' },
-    { name:'Stanza 4', airbnb:'', booking:'' }
+    { name:'Stanza 1' },
+    { name:'Stanza 2' },
+    { name:'Stanza 3' },
+    { name:'Stanza 4' }
   ],
   showGuestName: false,
   checkoutTime: '10:00',
-  checkinTime: '15:00',
-  proxy: 'https://api.allorigins.win/raw?url='
+  checkinTime: '15:00'
 };
 
 /* ============================================================
@@ -224,7 +222,6 @@ const state = {
   completed: {},     // 'YYYY-MM-DD_roomId' -> true
   isAdmin: false,
   lastUpdate: null,
-  loading: false,
   errorMsg: null
 };
 
@@ -241,7 +238,7 @@ function loadAll() {
     state.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
   }
   while (state.settings.rooms.length < 4) {
-    state.settings.rooms.push({ name:'Stanza ' + (state.settings.rooms.length + 1), airbnb:'', booking:'' });
+    state.settings.rooms.push({ name:'Stanza ' + (state.settings.rooms.length + 1) });
   }
   try { state.completed = JSON.parse(localStorage.getItem('pulizie_completed') || '{}'); }
   catch (e) { state.completed = {}; }
@@ -322,86 +319,29 @@ function extractDate(val) {
 }
 
 /* ============================================================
-   RECUPERO iCal
+   IMPORTAZIONE iCal LOCALE
 ============================================================ */
-async function fetchICS(url) {
-  const proxy = (state.settings.proxy || '').trim();
-  const target = proxy ? proxy + encodeURIComponent(url) : url;
-  const retryableStatuses = [408, 500, 502, 503, 504];
+async function importICSFile(file, roomId, source) {
+  const text = await file.text();
+  if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Il file non contiene un calendario iCal valido');
 
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const res = await fetch(target, { cache: 'no-store' });
-      if (!res.ok) {
-        if (!retryableStatuses.includes(res.status) || attempt === 2) {
-          throw new Error('HTTP ' + res.status);
-        }
-      } else {
-        const text = await res.text();
-        if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Risposta non valida');
-        return text;
-      }
-    } catch (err) {
-      if (!(err instanceof TypeError) || attempt === 2) throw err;
-    }
+  const imported = parseICS(text).map(event => ({
+    roomId,
+    start: event.start,
+    end: event.end,
+    summary: event.summary || '',
+    source
+  }));
 
-    await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-  }
-}
-
-async function refreshAll() {
-  if (state.loading) return;
-  state.loading = true;
-  state.errorMsg = null;
-  render();
-
-  const collected = [];
-  const errors = [];
-  const failedSources = new Set();
-  const rooms = state.settings.rooms;
-
-  for (let i = 0; i < rooms.length; i++) {
-    const room = rooms[i];
-    const sources = [];
-    if (room.airbnb)  sources.push({ tag: 'Airbnb',  url: room.airbnb });
-    if (room.booking) sources.push({ tag: 'Booking', url: room.booking });
-
-    for (const src of sources) {
-      try {
-        const text = await fetchICS(src.url);
-        const evs = parseICS(text);
-        for (const e of evs) {
-          collected.push({
-            roomId: i,
-            start: e.start,
-            end: e.end,
-            summary: e.summary || '',
-            source: src.tag
-          });
-        }
-      } catch (err) {
-        failedSources.add(`${i}|${src.tag}`);
-        errors.push(`${room.name} · ${src.tag}: ${err.message}`);
-      }
-    }
-  }
-
-  // Deduplicazione (stessa stanza + stesso periodo = stessa prenotazione)
-  const map = new Map();
-  const retained = state.events.filter(e => failedSources.has(`${e.roomId}|${e.source}`));
-  for (const e of [...retained, ...collected]) {
-    const k = `${e.roomId}|${e.start}|${e.end}`;
-    if (!map.has(k)) map.set(k, e);
-  }
-  state.events = Array.from(map.values());
-
+  state.events = state.events
+    .filter(event => event.roomId !== roomId || event.source !== source)
+    .concat(imported);
   state.lastUpdate = new Date().toISOString();
   localStorage.setItem('pulizie_events', JSON.stringify(state.events));
   localStorage.setItem('pulizie_lastupdate', state.lastUpdate);
-
-  state.loading = false;
-  state.errorMsg = errors.length ? errors.join('\n') : null;
+  state.errorMsg = null;
   render();
+  toast(`${imported.length} prenotazioni importate`);
 }
 
 /* ============================================================
@@ -555,22 +495,17 @@ function viewHome() {
     html += `<div class="all-done">✓ TUTTE LE PULIZIE DI OGGI SONO COMPLETATE</div>`;
   }
 
-  if (state.loading) {
-    html += `<div class="empty">⏳ Aggiornamento calendari in corso…</div>`;
-  }
-
   if (state.errorMsg) {
-    html += `<div class="error-box">⚠️ <strong>Errore recupero calendari</strong><br>${
+    html += `<div class="error-box">⚠️ <strong>Errore importazione iCal</strong><br>${
       escapeHtml(state.errorMsg).replace(/\n/g, '<br>')}</div>`;
   }
 
-  const noUrls = state.settings.rooms.every(r => !r.airbnb && !r.booking);
-  if (noUrls) {
+  if (!state.events.length) {
     html += `<div class="empty">
-      Nessun calendario configurato.<br><br>
+      Nessuna prenotazione importata.<br><br>
       ${state.isAdmin
-        ? 'Vai su <strong>⚙️ Impostazioni</strong> per inserire gli URL iCal di Airbnb e Booking.com.'
-        : 'Contatta l\'amministratore per configurare i calendari.'}
+        ? 'Vai su <strong>⚙️ Impostazioni</strong> per importare i file .ics di Airbnb o Booking.com.'
+        : 'Contatta l\'amministratore per importare i calendari .ics.'}
     </div>`;
     return html;
   }
@@ -683,29 +618,29 @@ function viewSettings() {
 
   let html = `<div class="view-title">⚙️ Impostazioni</div>`;
 
-  /* Aggiornamento */
+  /* Importazione */
   html += `<div class="card">
-    <div class="card-title">Aggiornamento calendari</div>
+    <div class="card-title">Calendari iCal</div>
     <div class="card-sub">Ultimo aggiornamento: ${
       state.lastUpdate ? formatDateTime(state.lastUpdate) : '—'}</div>
-    <button class="btn btn-primary" data-action="refresh">⟳ Aggiorna ora</button>
+    <div class="hint">Importa i file .ics scaricati da Airbnb o Booking. I dati vengono letti e salvati solo in questo browser.</div>
   </div>`;
 
   /* Stanze */
-  html += `<div class="section-title">Stanze e calendari iCal</div>`;
+  html += `<div class="section-title">Stanze e file iCal</div>`;
   state.settings.rooms.forEach((r, i) => {
     html += `<div class="card">
       <label class="lbl">Nome stanza ${i + 1}</label>
       <input class="inp" type="text" value="${escapeAttr(r.name)}"
         data-room-name="${i}" placeholder="Stanza ${i + 1}">
 
-      <label class="lbl">URL iCal Airbnb</label>
-      <input class="inp" type="url" value="${escapeAttr(r.airbnb)}"
-        data-room-airbnb="${i}" placeholder="https://www.airbnb.it/calendar/ical/....ics">
+      <label class="lbl">File iCal Airbnb</label>
+      <input class="inp" type="file" accept=".ics,text/calendar"
+        data-import-ics data-room="${i}" data-source="Airbnb">
 
-      <label class="lbl">URL iCal Booking.com</label>
-      <input class="inp" type="url" value="${escapeAttr(r.booking)}"
-        data-room-booking="${i}" placeholder="https://ical.booking.com/v1/export?t=....">
+      <label class="lbl">File iCal Booking.com</label>
+      <input class="inp" type="file" accept=".ics,text/calendar"
+        data-import-ics data-room="${i}" data-source="Booking">
     </div>`;
   });
 
@@ -723,15 +658,6 @@ function viewSettings() {
     <label class="lbl">Orario check-in</label>
     <input class="inp" type="time" value="${escapeAttr(state.settings.checkinTime)}"
       data-toggle="checkinTime">
-  </div>`;
-
-  /* Proxy */
-  html += `<div class="card">
-    <label class="lbl">Proxy CORS (recupero iCal)</label>
-    <input class="inp" type="text" value="${escapeAttr(state.settings.proxy)}"
-      data-toggle="proxy" placeholder="https://api.allorigins.win/raw?url=">
-    <div class="hint">I browser bloccano le richieste dirette verso server esterni.
-      Il proxy permette di scaricare i calendari iCal. Lascia vuoto per disattivarlo.</div>
   </div>`;
 
   /* Azioni */
@@ -796,13 +722,6 @@ function saveSettingsFromForm() {
     const i = +inp.dataset.roomName;
     state.settings.rooms[i].name = inp.value.trim() || ('Stanza ' + (i + 1));
   });
-  document.querySelectorAll('[data-room-airbnb]').forEach(inp => {
-    state.settings.rooms[+inp.dataset.roomAirbnb].airbnb = inp.value.trim();
-  });
-  document.querySelectorAll('[data-room-booking]').forEach(inp => {
-    state.settings.rooms[+inp.dataset.roomBooking].booking = inp.value.trim();
-  });
-
   const gs = document.querySelector('[data-toggle="showGuestName"]');
   if (gs) state.settings.showGuestName = gs.checked;
 
@@ -811,9 +730,6 @@ function saveSettingsFromForm() {
 
   const ci = document.querySelector('[data-toggle="checkinTime"]');
   if (ci && ci.value) state.settings.checkinTime = ci.value;
-
-  const px = document.querySelector('[data-toggle="proxy"]');
-  if (px) state.settings.proxy = px.value.trim();
 
   saveSettingsLS();
 }
@@ -868,7 +784,6 @@ document.getElementById('main').addEventListener('click', e => {
   else if (action === 'saveSettings') {
     saveSettingsFromForm();
     toast('Impostazioni salvate 💾');
-    refreshAll();
   }
   else if (action === 'resetCompleted') {
     if (confirm('Azzerare tutte le pulizie segnate come completate?')) {
@@ -878,15 +793,26 @@ document.getElementById('main').addEventListener('click', e => {
       toast('Pulizie completate azzerate');
     }
   }
-  else if (action === 'refresh') {
-    refreshAll();
-  }
   else if (action === 'logout') {
     state.isAdmin = false;
     localStorage.removeItem('pulizie_admin');
     state.view = 'home';
     render();
     toast('Modalità amministratore disattivata');
+  }
+});
+
+document.getElementById('main').addEventListener('change', async e => {
+  const input = e.target.closest('[data-import-ics]');
+  const file = input && input.files && input.files[0];
+  if (!file) return;
+
+  try {
+    await importICSFile(file, Number(input.dataset.room), input.dataset.source);
+  } catch (err) {
+    state.errorMsg = err.message || 'Importazione del file non riuscita';
+    render();
+    toast('File iCal non valido');
   }
 });
 
@@ -915,8 +841,6 @@ document.getElementById('modal').addEventListener('click', e => {
   if (e.target.hasAttribute('data-modal-bg')) closeModal();
 });
 
-document.getElementById('refreshBtn').addEventListener('click', refreshAll);
-
 document.getElementById('lockBtn').addEventListener('click', () => {
   if (state.isAdmin) {
     state.isAdmin = false;
@@ -943,18 +867,6 @@ document.getElementById('lockBtn').addEventListener('click', () => {
 ============================================================ */
 loadAll();
 render();
-refreshAll();
-
-// Aggiornamento automatico ogni 30 minuti
-setInterval(() => { refreshAll(); }, 30 * 60 * 1000);
-
-// Aggiorna quando l'app torna in primo piano
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    const lu = state.lastUpdate ? new Date(state.lastUpdate).getTime() : 0;
-    if (Date.now() - lu > 10 * 60 * 1000) refreshAll();
-  }
-});
 </script>
 </body>
 </html>

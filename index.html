@@ -16,18 +16,23 @@ html{height:100%}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   background:var(--bg);color:var(--text);font-size:16px;line-height:1.4;
-  padding-top:82px;padding-bottom:84px;min-height:100%;
+  padding-top:92px;padding-bottom:84px;min-height:100%;
   -webkit-font-smoothing:antialiased;
 }
-
-/* ---------- HEADER ---------- */
 header{
   position:fixed;top:0;left:0;right:0;z-index:100;
   background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;
   padding:10px 16px 9px;box-shadow:0 2px 10px rgba(0,0,0,.15);
 }
 .h-row{display:flex;align-items:center;justify-content:space-between}
-.brand{font-size:18px;font-weight:800;letter-spacing:.3px}
+.brand{font-size:18px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#94a3b8;
+  box-shadow:0 0 0 3px rgba(255,255,255,.2);transition:.3s}
+.sync-dot.ok{background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.3)}
+.sync-dot.stale{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.3)}
+.sync-dot.err{background:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.3)}
+.sync-dot.loading{background:#fff;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .h-actions{display:flex;gap:6px}
 .icon-btn{
   background:rgba(255,255,255,.18);border:none;color:#fff;
@@ -35,15 +40,15 @@ header{
   display:flex;align-items:center;justify-content:center;transition:.15s;
 }
 .icon-btn:active{background:rgba(255,255,255,.34);transform:scale(.95)}
-.h-sub{font-size:11px;opacity:.88;margin-top:5px;font-weight:500}
-
-/* ---------- MAIN ---------- */
+.icon-btn .spin{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.h-sub{font-size:11px;opacity:.9;margin-top:6px;font-weight:500;
+  display:flex;justify-content:space-between;align-items:center;gap:8px}
+.h-sub .right{opacity:.85}
 main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .view-title{font-size:20px;font-weight:800;margin:4px 0 14px;padding-left:2px}
 .section-title{font-size:12px;font-weight:800;color:var(--muted);
   text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 8px}
-
-/* ---------- DASHBOARD ---------- */
 .dashboard{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
 .stat{background:#fff;border-radius:14px;padding:12px 6px;text-align:center;
   box-shadow:0 1px 3px rgba(0,0,0,.06)}
@@ -52,25 +57,18 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .stat-lbl{font-size:10px;color:var(--muted);margin-top:5px;font-weight:700;
   text-transform:uppercase;letter-spacing:.3px}
 .stat-date{font-size:10px;color:var(--muted);margin-top:2px;font-weight:600}
-
 .all-done{background:var(--success);color:#fff;padding:14px 16px;border-radius:14px;
   font-weight:800;text-align:center;margin-bottom:16px;font-size:13.5px;
   box-shadow:0 4px 14px rgba(22,163,74,.35);letter-spacing:.2px}
-
 .error-box{background:#fef2f2;color:#991b1b;padding:12px 14px;border-radius:12px;
   font-size:12.5px;margin-bottom:14px;border-left:4px solid var(--danger);line-height:1.5}
 .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;line-height:1.6}
 .no-clean{color:#94a3b8;font-size:13px;font-style:italic;padding:4px 6px 10px}
-
-/* ---------- DAY BLOCK ---------- */
 .day-block{margin-bottom:20px}
 .day-header{font-size:12.5px;font-weight:800;color:var(--muted);
   text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;padding-left:4px}
-
-/* ---------- CLEANING CARD ---------- */
 .clean-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;
-  box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid var(--primary);
-  transition:.15s}
+  box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid var(--primary);transition:.15s}
 .clean-card.both{border-left-color:var(--warning);background:var(--warning-bg)}
 .clean-card.done{border-left-color:var(--success);background:var(--success-bg);opacity:.85}
 .cc-top{display:flex;align-items:center;justify-content:space-between}
@@ -81,23 +79,19 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .cc-both{display:inline-block;margin-top:9px;font-size:11.5px;font-weight:800;
   color:#9a3412;background:#ffedd5;padding:5px 10px;border-radius:8px;letter-spacing:.2px}
 .cc-guest{font-size:13px;color:var(--muted);margin-top:7px}
-
-/* ---------- BUTTONS ---------- */
+.cc-src{font-size:10.5px;color:#94a3b8;margin-top:6px;font-weight:600}
 .btn{display:block;width:100%;border:none;border-radius:12px;padding:14px;
   font-size:15.5px;font-weight:800;cursor:pointer;margin-top:12px;
   font-family:inherit;transition:.12s;letter-spacing:.2px}
 .btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
 .btn-done{background:var(--success);color:#fff}
-.btn-done:active{background:#15803d}
 .btn-undone{background:#e2e8f0;color:#475569}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-danger{background:#fee2e2;color:#991b1b}
 .btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border)}
 .btn-close{background:#f1f5f9;color:var(--muted)}
-
-/* ---------- CALENDAR ---------- */
-.cal-wrap{background:#fff;border-radius:16px;padding:8px;
-  box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.cal-wrap{background:#fff;border-radius:16px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .cal-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr 1fr;gap:4px}
 .cal-cell{display:flex;align-items:center;justify-content:center;
   padding:9px 2px;border-radius:9px;font-size:13px;font-weight:700;min-height:42px}
@@ -110,13 +104,10 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .cal-status:active{transform:scale(.92)}
 .cal-status.today{background:#e0e7ff}
 .cal-status.free{color:#cbd5e1;font-size:19px}
-
 .legend{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;
   font-size:12.5px;color:var(--muted);font-weight:600;padding:0 4px}
 .legend>div{display:flex;align-items:center;gap:7px}
 .legend .lg{font-size:16px}
-
-/* ---------- SETTINGS ---------- */
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;
   box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .card-title{font-size:15px;font-weight:800;margin-bottom:4px}
@@ -129,12 +120,18 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
   transition:.15s;outline:none}
 .inp:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 .hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.detected{font-size:11.5px;color:var(--success);margin-top:6px;font-weight:600;
+  display:flex;align-items:center;gap:5px}
 .row-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;
   font-size:14px;font-weight:600;cursor:pointer;padding:4px 0}
 .row-toggle input{width:22px;height:22px;accent-color:var(--primary);cursor:pointer}
 .footer-note{text-align:center;font-size:11.5px;color:#94a3b8;padding:16px 10px 4px;line-height:1.5}
 
-/* ---------- NAV ---------- */
+.src-badge{display:inline-block;font-size:10px;font-weight:800;
+  padding:3px 8px;border-radius:6px;margin-left:6px;vertical-align:middle;
+  letter-spacing:.2px}
+.src-badge.direct{background:#dbeafe;color:#1e40af}
+
 nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
   display:flex;box-shadow:0 -2px 14px rgba(0,0,0,.09);
   padding-bottom:env(safe-area-inset-bottom)}
@@ -145,8 +142,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
 .nav-btn:active{transform:scale(.94)}
 .nav-icon{font-size:21px;line-height:1}
 .nav-label{font-size:10.5px;font-weight:800;letter-spacing:.2px}
-
-/* ---------- MODAL ---------- */
 .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;
   display:flex;align-items:flex-end;justify-content:center;padding:14px;
   animation:fadeIn .15s ease}
@@ -165,12 +160,10 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 @media(min-width:480px){.modal-bg{align-items:center}}
-
-/* ---------- TOAST ---------- */
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
   background:#0f172a;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;
   font-weight:700;z-index:300;opacity:0;pointer-events:none;transition:.25s;
-  box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap}
+  box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -178,38 +171,77 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
 
 <header>
   <div class="h-row">
-    <div class="brand">🧹 Pulizie</div>
+    <div class="brand">
+      <span class="sync-dot" id="syncDot"></span>
+      <span>🧹 Pulizie</span>
+    </div>
     <div class="h-actions">
+      <button class="icon-btn" id="refreshBtn" title="Aggiorna"><span id="refreshIcon">⟳</span></button>
       <button class="icon-btn" id="lockBtn" title="Accesso">🔒</button>
     </div>
   </div>
-  <div class="h-sub" id="lastUpdate">Ultimo aggiornamento: —</div>
+  <div class="h-sub">
+    <span id="lastUpdate">Ultimo aggiornamento: —</span>
+    <span class="right" id="syncStatus"></span>
+  </div>
 </header>
 
 <main id="main"></main>
 <nav id="nav"></nav>
 <div id="modal"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import {
+  doc,
+  getDoc,
+  getFirestore,
+  serverTimestamp,
+  setDoc
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+const firebaseApp = initializeApp({
+  apiKey: 'AIzaSyCWBSF491f3qG6F7MNg4Qsiz0B_9h98Ce8',
+  authDomain: 'calendario-690a0.firebaseapp.com',
+  projectId: 'calendario-690a0',
+  storageBucket: 'calendario-690a0.firebasestorage.app',
+  messagingSenderId: '510169773023',
+  appId: '1:510169773023:web:fd4150eab5afa5960b8a6a'
+});
+const db = getFirestore(firebaseApp);
+const settingsRef = doc(db, 'apps', 'pulizie');
+
 /* ============================================================
    COSTANTI
 ============================================================ */
 const PIN_ADMIN = '1234';
+const AUTO_UPDATE_MS = 60 * 60 * 1000;
+const VISIBILITY_THRESHOLD_MS = 30 * 60 * 1000;
+const STALE_MS = 90 * 60 * 1000;
+const VERY_STALE_MS = 24 * 60 * 60 * 1000;
+
 const GIORNI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
               'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const MESI_BREVI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 
+const DEFAULT_ROOM = {
+  name: 'Stanza',
+  airbnb: '',
+  booking: ''
+};
+
 const DEFAULT_SETTINGS = {
   rooms: [
-    { name:'Stanza 1' },
-    { name:'Stanza 2' },
-    { name:'Stanza 3' },
-    { name:'Stanza 4' }
+    { ...DEFAULT_ROOM, name: 'Stanza 1' },
+    { ...DEFAULT_ROOM, name: 'Stanza 2' },
+    { ...DEFAULT_ROOM, name: 'Stanza 3' },
+    { ...DEFAULT_ROOM, name: 'Stanza 4' }
   ],
   showGuestName: false,
   checkoutTime: '10:00',
-  checkinTime: '15:00'
+  checkinTime: '15:00',
+  proxy: 'https://api.allorigins.win/raw?url='
 };
 
 /* ============================================================
@@ -218,40 +250,110 @@ const DEFAULT_SETTINGS = {
 const state = {
   view: 'home',
   settings: null,
-  events: [],        // {roomId, start, end, summary, source}
-  completed: {},     // 'YYYY-MM-DD_roomId' -> true
+  events: [],
+  detectedNames: {},
+  completed: {},
   isAdmin: false,
   lastUpdate: null,
-  errorMsg: null
+  fetching: false,
+  fetchProgress: { done: 0, total: 0 },
+  errorMsg: null,
+  lastErrorAt: null,
+  cloudError: null
 };
 
 /* ============================================================
    PERSISTENZA
 ============================================================ */
 function loadAll() {
+  let rawSettings = null;
   try {
-    const raw = JSON.parse(localStorage.getItem('pulizie_settings') || 'null');
-    state.settings = raw
-      ? Object.assign({}, DEFAULT_SETTINGS, raw, { rooms: raw.rooms || [] })
-      : JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    rawSettings = JSON.parse(localStorage.getItem('pulizie_settings_v3') || 'null');
   } catch (e) {
-    state.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    rawSettings = null;
   }
-  while (state.settings.rooms.length < 4) {
-    state.settings.rooms.push({ name:'Stanza ' + (state.settings.rooms.length + 1) });
-  }
+  const storedRooms = rawSettings && Array.isArray(rawSettings.rooms)
+    ? rawSettings.rooms
+    : [];
+  const legacyGoogleRooms = storedRooms.map(
+    r => r.source === 'google' || Boolean(r.google)
+  );
+  const hasLegacyRoomSettings = storedRooms.some(
+    r => r.source !== undefined || r.google !== undefined
+  );
+  state.settings = normalizeSettings(rawSettings || DEFAULT_SETTINGS);
+  if (hasLegacyRoomSettings) saveSettingsLS();
+
   try { state.completed = JSON.parse(localStorage.getItem('pulizie_completed') || '{}'); }
   catch (e) { state.completed = {}; }
   try { state.events = JSON.parse(localStorage.getItem('pulizie_events') || '[]'); }
   catch (e) { state.events = []; }
+  if (!Array.isArray(state.events)) state.events = [];
+  const events = state.events.filter(e => e.source !== 'Google');
+  if (events.length !== state.events.length) {
+    state.events = events;
+    localStorage.setItem('pulizie_events', JSON.stringify(state.events));
+  }
+  try { state.detectedNames = JSON.parse(localStorage.getItem('pulizie_detected') || '{}'); }
+  catch (e) { state.detectedNames = {}; }
+  if (legacyGoogleRooms.some(Boolean)) {
+    legacyGoogleRooms.forEach((wasGoogle, i) => {
+      if (wasGoogle) delete state.detectedNames[i];
+    });
+    saveDetectedLS();
+  }
+
   state.lastUpdate = localStorage.getItem('pulizie_lastupdate') || null;
+  state.lastErrorAt = localStorage.getItem('pulizie_lasterror') || null;
   state.isAdmin = localStorage.getItem('pulizie_admin') === '1';
 }
-function saveSettingsLS() { localStorage.setItem('pulizie_settings', JSON.stringify(state.settings)); }
+function normalizeSettings(settings) {
+  const normalized = Object.assign({}, DEFAULT_SETTINGS, settings, {
+    rooms: Array.isArray(settings.rooms) ? settings.rooms : []
+  });
+  normalized.rooms = normalized.rooms.map(r => {
+    const base = { ...DEFAULT_ROOM, ...r };
+    delete base.source;
+    delete base.google;
+    if (typeof base.airbnb !== 'string') base.airbnb = '';
+    if (typeof base.booking !== 'string') base.booking = '';
+    if (!base.name) base.name = 'Stanza';
+    return base;
+  });
+  while (normalized.rooms.length < 4) {
+    normalized.rooms.push({ ...DEFAULT_ROOM, name: 'Stanza ' + (normalized.rooms.length + 1) });
+  }
+  return normalized;
+}
+async function loadCloudSettings() {
+  const snapshot = await getDoc(settingsRef);
+  if (snapshot.exists()) {
+    const cloudSettings = snapshot.data().settings;
+    if (!cloudSettings || typeof cloudSettings !== 'object') {
+      throw new Error('Le impostazioni salvate su Firebase non sono valide.');
+    }
+    state.settings = normalizeSettings(cloudSettings);
+  } else {
+    await setDoc(settingsRef, {
+      settings: state.settings,
+      updatedAt: serverTimestamp()
+    });
+  }
+  saveSettingsLS();
+}
+async function saveCloudSettings() {
+  await setDoc(settingsRef, {
+    settings: state.settings,
+    updatedAt: serverTimestamp()
+  });
+  state.cloudError = null;
+}
+function saveSettingsLS() { localStorage.setItem('pulizie_settings_v3', JSON.stringify(state.settings)); }
 function saveCompletedLS() { localStorage.setItem('pulizie_completed', JSON.stringify(state.completed)); }
+function saveDetectedLS() { localStorage.setItem('pulizie_detected', JSON.stringify(state.detectedNames)); }
 
 /* ============================================================
-   UTILITÀ DATE
+   DATE
 ============================================================ */
 function toKey(d) {
   return d.getFullYear() + '-' +
@@ -277,6 +379,16 @@ function formatDateTime(iso) {
   return d.getDate() + ' ' + MESI_BREVI[d.getMonth()] + ' ' +
     String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
+function timeSince(isoString) {
+  if (!isoString) return 'mai';
+  const diff = Date.now() - new Date(isoString).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'adesso';
+  if (min < 60) return min + ' min fa';
+  const h = Math.floor(min / 60);
+  if (h < 24) return h + 'h fa';
+  return Math.floor(h / 24) + 'g fa';
+}
 
 /* ============================================================
    ESCAPE
@@ -295,9 +407,14 @@ function parseICS(text) {
   text = text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '').replace(/\r/g, '');
   const lines = text.split('\n');
   const events = [];
+  let calName = null;
   let cur = null;
   for (const raw of lines) {
     const line = raw.trim();
+    if (line.startsWith('X-WR-CALNAME:')) {
+      calName = line.substring(13).trim();
+      continue;
+    }
     if (line === 'BEGIN:VEVENT') { cur = {}; continue; }
     if (line === 'END:VEVENT') { if (cur) events.push(cur); cur = null; continue; }
     if (!cur) continue;
@@ -310,7 +427,7 @@ function parseICS(text) {
     else if (name === 'DTEND') cur.end = extractDate(val);
     else if (name === 'SUMMARY') cur.summary = val;
   }
-  return events.filter(e => e.start && e.end);
+  return { events: events.filter(e => e.start && e.end), calName };
 }
 function extractDate(val) {
   const m = String(val).trim().match(/^(\d{4})(\d{2})(\d{2})/);
@@ -319,33 +436,156 @@ function extractDate(val) {
 }
 
 /* ============================================================
-   IMPORTAZIONE iCal LOCALE
+   FETCH iCal (con timeout)
 ============================================================ */
-async function importICSFile(file, roomId, source) {
-  const text = await file.text();
-  if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Il file non contiene un calendario iCal valido');
+async function fetchICS(url) {
+  const proxy = (state.settings.proxy || '').trim();
+  const target = proxy ? proxy + encodeURIComponent(url) : url;
 
-  const imported = parseICS(text).map(event => ({
-    roomId,
-    start: event.start,
-    end: event.end,
-    summary: event.summary || '',
-    source
-  }));
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 20000);
 
-  state.events = state.events
-    .filter(event => event.roomId !== roomId || event.source !== source)
-    .concat(imported);
-  state.lastUpdate = new Date().toISOString();
-  localStorage.setItem('pulizie_events', JSON.stringify(state.events));
-  localStorage.setItem('pulizie_lastupdate', state.lastUpdate);
-  state.errorMsg = null;
-  render();
-  toast(`${imported.length} prenotazioni importate`);
+  try {
+    const res = await fetch(target, { cache: 'no-store', signal: ctrl.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    if (!text.includes('BEGIN:VCALENDAR')) {
+      if (text.includes('<html') || text.includes('<!DOCTYPE')) {
+        throw new Error('Il server ha restituito una pagina HTML (URL non valido o protetto?)');
+      }
+      throw new Error('Risposta non valida (non è un iCal)');
+    }
+    return text;
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('Timeout (20s)');
+    if (/Failed to fetch/i.test(err.message)) {
+      throw new Error('Errore di rete / CORS bloccato');
+    }
+    throw err;
+  }
 }
 
 /* ============================================================
-   LOGICA PULIZIE / STATI
+   COSTRUZIONE TASK PER STANZA
+============================================================ */
+function buildTasksForRoom(room) {
+  const tasks = [];
+
+  if (room.airbnb && room.airbnb.trim()) {
+    tasks.push({
+      url: room.airbnb.trim(),
+      label: room.name + ' · Airbnb',
+      sourceTag: 'Airbnb'
+    });
+  }
+  if (room.booking && room.booking.trim()) {
+    tasks.push({
+      url: room.booking.trim(),
+      label: room.name + ' · Booking',
+      sourceTag: 'Booking'
+    });
+  }
+
+  return tasks;
+}
+
+/* ============================================================
+   REFRESH
+============================================================ */
+async function refreshAll() {
+  if (state.fetching) return;
+
+  if (state.view === 'settings' && state.isAdmin) {
+    try {
+      await saveSettingsFromForm();
+    } catch (err) {
+      state.cloudError = 'Impossibile salvare le impostazioni su Firebase: ' + err.message;
+      render();
+      return;
+    }
+  }
+
+  const rooms = state.settings.rooms;
+  const tasks = [];
+  rooms.forEach((room, i) => {
+    tasks.push(...buildTasksForRoom(room));
+  });
+
+  if (tasks.length === 0) {
+    state.errorMsg = null;
+    state.fetching = false;
+    render();
+    return;
+  }
+
+  state.fetching = true;
+  state.fetchProgress = { done: 0, total: tasks.length };
+  state.errorMsg = null;
+  render();
+
+  const collected = [];
+  const errors = [];
+  const newDetected = {};
+
+  for (const task of tasks) {
+    try {
+      const text = await fetchICS(task.url);
+      const parsed = parseICS(text);
+      // roomId = ricavato dall'indice stanza
+      const roomId = rooms.findIndex(r => buildTasksForRoom(r).some(t => t.url === task.url));
+      const rid = roomId >= 0 ? roomId : 0;
+      for (const e of parsed.events) {
+        collected.push({
+          roomId: rid,
+          start: e.start,
+          end: e.end,
+          summary: e.summary || '',
+          source: task.sourceTag
+        });
+      }
+      if (parsed.calName && roomId >= 0) {
+        newDetected[roomId] = parsed.calName;
+      }
+    } catch (err) {
+      errors.push(`${task.label}: ${err.message}`);
+    }
+    state.fetchProgress.done++;
+    render();
+  }
+
+  // Deduplicazione
+  const map = new Map();
+  for (const e of collected) {
+    const k = `${e.roomId}|${e.start}|${e.end}`;
+    if (!map.has(k)) map.set(k, e);
+  }
+  state.events = Array.from(map.values());
+
+  Object.assign(state.detectedNames, newDetected);
+  saveDetectedLS();
+
+  state.lastUpdate = new Date().toISOString();
+  localStorage.setItem('pulizie_events', JSON.stringify(state.events));
+  localStorage.setItem('pulizie_lastupdate', state.lastUpdate);
+
+  if (errors.length) {
+    state.errorMsg = errors.join('\n');
+    state.lastErrorAt = new Date().toISOString();
+    localStorage.setItem('pulizie_lasterror', state.lastErrorAt);
+  } else {
+    state.errorMsg = null;
+    state.lastErrorAt = null;
+    localStorage.removeItem('pulizie_lasterror');
+  }
+
+  state.fetching = false;
+  render();
+}
+
+/* ============================================================
+   LOGICA PULIZIE
 ============================================================ */
 function getCleaningsForDate(dateKey) {
   const res = [];
@@ -359,7 +599,8 @@ function getCleaningsForDate(dateKey) {
       roomId: r,
       hasCheckin: !!inEv,
       guestOut: outEv.summary || '',
-      guestIn: inEv ? (inEv.summary || '') : ''
+      guestIn: inEv ? (inEv.summary || '') : '',
+      source: outEv.source || ''
     });
   }
   return res;
@@ -394,11 +635,9 @@ function statusLabel(s) {
   if (s === 'occupied') return 'Occupata';
   return 'Libera';
 }
-
 function isCompleted(dateKey, roomId) {
   return !!state.completed[dateKey + '_' + roomId];
 }
-
 function cleanGuestName(summary) {
   if (!summary) return null;
   const s = summary.trim();
@@ -407,7 +646,6 @@ function cleanGuestName(summary) {
   if (/not available|blocked|reserved|closed/i.test(s)) return null;
   return s;
 }
-
 function shortName(name) {
   const m = String(name).match(/\d+/);
   if (m) return m[0];
@@ -415,15 +653,36 @@ function shortName(name) {
 }
 
 /* ============================================================
-   RENDER PRINCIPALE
+   SYNC STATUS
+============================================================ */
+function computeSyncStatus() {
+  if (state.fetching) return { dot: 'loading', text: `⟳ ${state.fetchProgress.done}/${state.fetchProgress.total}` };
+  if (state.errorMsg && state.lastErrorAt) return { dot: 'err', text: '⚠️ errore' };
+  if (!state.lastUpdate) return { dot: '', text: '' };
+  const age = Date.now() - new Date(state.lastUpdate).getTime();
+  if (age < STALE_MS) return { dot: 'ok', text: '✓ sincronizzato' };
+  if (age < VERY_STALE_MS) return { dot: 'stale', text: '⏱ ' + timeSince(state.lastUpdate) };
+  return { dot: 'err', text: '⏱ ' + timeSince(state.lastUpdate) };
+}
+
+/* ============================================================
+   RENDER
 ============================================================ */
 function render() {
-  const lu = document.getElementById('lastUpdate');
-  lu.textContent = 'Ultimo aggiornamento: ' +
-    (state.lastUpdate ? formatTime(state.lastUpdate) : '—');
+  const sync = computeSyncStatus();
+  document.getElementById('syncDot').className = 'sync-dot ' + sync.dot;
 
-  const lockBtn = document.getElementById('lockBtn');
-  lockBtn.textContent = state.isAdmin ? '🔓' : '🔒';
+  const lu = document.getElementById('lastUpdate');
+  if (state.fetching) {
+    lu.textContent = `Aggiornamento in corso… (${state.fetchProgress.done}/${state.fetchProgress.total})`;
+  } else {
+    lu.textContent = 'Ultimo aggiornamento: ' +
+      (state.lastUpdate ? formatTime(state.lastUpdate) : '—');
+  }
+  document.getElementById('syncStatus').textContent = sync.text;
+
+  document.getElementById('refreshIcon').className = state.fetching ? 'spin' : '';
+  document.getElementById('lockBtn').textContent = state.isAdmin ? '🔓' : '🔒';
 
   renderNav();
 
@@ -431,6 +690,10 @@ function render() {
   if (state.view === 'home') main.innerHTML = viewHome();
   else if (state.view === 'calendar') main.innerHTML = viewCalendar();
   else if (state.view === 'settings') main.innerHTML = viewSettings();
+  if (state.cloudError) {
+    main.insertAdjacentHTML('afterbegin',
+      `<div class="error-box">⚠️ <strong>Sincronizzazione Firebase</strong><br>${escapeHtml(state.cloudError)}</div>`);
+  }
 }
 
 function renderNav() {
@@ -449,7 +712,7 @@ function renderNav() {
 }
 
 /* ============================================================
-   VIEW: HOME — PULIZIE
+   HOME
 ============================================================ */
 function viewHome() {
   const today = new Date();
@@ -468,7 +731,6 @@ function viewHome() {
 
   let html = '';
 
-  /* Dashboard */
   html += `<div class="dashboard">
     <div class="stat">
       <div class="stat-num">${cToday.length}</div>
@@ -495,22 +757,31 @@ function viewHome() {
     html += `<div class="all-done">✓ TUTTE LE PULIZIE DI OGGI SONO COMPLETATE</div>`;
   }
 
-  if (state.errorMsg) {
-    html += `<div class="error-box">⚠️ <strong>Errore importazione iCal</strong><br>${
-      escapeHtml(state.errorMsg).replace(/\n/g, '<br>')}</div>`;
+  if (state.fetching && state.fetchProgress.total > 0) {
+    html += `<div class="empty">⏳ Aggiornamento calendari… (${state.fetchProgress.done}/${state.fetchProgress.total})</div>`;
   }
 
-  if (!state.events.length) {
+  if (state.errorMsg) {
+    html += `<div class="error-box">⚠️ <strong>Errori recupero calendari</strong><br>${
+      escapeHtml(state.errorMsg).replace(/\n/g, '<br>')}
+      <br><br><em>Se vedi "CORS bloccato" o "Errore di rete", prova a impostare un proxy diverso in Impostazioni o configura un Cloudflare Worker personale.</em>
+    </div>`;
+  }
+
+  const noUrls = state.settings.rooms.every(r => {
+    return !r.airbnb && !r.booking;
+  });
+
+  if (noUrls) {
     html += `<div class="empty">
-      Nessuna prenotazione importata.<br><br>
+      Nessun calendario configurato.<br><br>
       ${state.isAdmin
-        ? 'Vai su <strong>⚙️ Impostazioni</strong> per importare i file .ics di Airbnb o Booking.com.'
-        : 'Contatta l\'amministratore per importare i calendari .ics.'}
+        ? 'Vai su <strong>⚙️ Impostazioni</strong> per configurare le fonti dei calendari.'
+        : 'Contatta l\'amministratore per configurare i calendari.'}
     </div>`;
     return html;
   }
 
-  /* Giorni */
   days.forEach((d, idx) => {
     const dk = toKey(d);
     const cleanings = getCleaningsForDate(dk);
@@ -548,11 +819,14 @@ function renderCleaningCard(dk, c) {
   if (done) cls += ' done';
 
   const guest = state.settings.showGuestName ? cleanGuestName(c.guestOut) : null;
+  const srcBadge = c.source
+    ? `<span class="src-badge direct">${escapeHtml(c.source)}</span>`
+    : '';
 
   return `
   <div class="${cls}">
     <div class="cc-top">
-      <div class="cc-room">🧹 ${escapeHtml(room.name.toUpperCase())}</div>
+      <div class="cc-room">🧹 ${escapeHtml(room.name.toUpperCase())}${srcBadge}</div>
       ${done ? '<div class="cc-check">✓</div>' : ''}
     </div>
     <div class="cc-info">Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>
@@ -565,7 +839,7 @@ function renderCleaningCard(dk, c) {
 }
 
 /* ============================================================
-   VIEW: CALENDARIO 15 GIORNI
+   CALENDARIO
 ============================================================ */
 function viewCalendar() {
   const today = new Date();
@@ -609,7 +883,7 @@ function viewCalendar() {
 }
 
 /* ============================================================
-   VIEW: IMPOSTAZIONI (solo admin)
+   IMPOSTAZIONI
 ============================================================ */
 function viewSettings() {
   if (!state.isAdmin) {
@@ -618,33 +892,44 @@ function viewSettings() {
 
   let html = `<div class="view-title">⚙️ Impostazioni</div>`;
 
-  /* Importazione */
   html += `<div class="card">
-    <div class="card-title">Calendari iCal</div>
+    <div class="card-title">Aggiornamento calendari</div>
     <div class="card-sub">Ultimo aggiornamento: ${
-      state.lastUpdate ? formatDateTime(state.lastUpdate) : '—'}</div>
-    <div class="hint">Importa i file .ics scaricati da Airbnb o Booking. I dati vengono letti e salvati solo in questo browser.</div>
+      state.lastUpdate ? formatDateTime(state.lastUpdate) : '—'}
+      ${state.lastUpdate ? ' · ' + timeSince(state.lastUpdate) : ''}</div>
+    <div class="hint">Aggiornamento automatico ogni <strong>60 minuti</strong> e al ritorno
+      in primo piano dopo 30 minuti di inattività.</div>
+    <button class="btn btn-primary" data-action="refresh" ${state.fetching ? 'disabled' : ''}>
+      ${state.fetching ? `⟳ Aggiornamento… (${state.fetchProgress.done}/${state.fetchProgress.total})` : '⟳ Aggiorna ora'}
+    </button>
   </div>`;
 
-  /* Stanze */
-  html += `<div class="section-title">Stanze e file iCal</div>`;
+  html += `<div class="section-title">Stanze</div>`;
+
   state.settings.rooms.forEach((r, i) => {
+    const detected = state.detectedNames[i];
+
     html += `<div class="card">
       <label class="lbl">Nome stanza ${i + 1}</label>
       <input class="inp" type="text" value="${escapeAttr(r.name)}"
         data-room-name="${i}" placeholder="Stanza ${i + 1}">
 
-      <label class="lbl">File iCal Airbnb</label>
-      <input class="inp" type="file" accept=".ics,text/calendar"
-        data-import-ics data-room="${i}" data-source="Airbnb">
+      <label class="lbl">URL iCal Airbnb</label>
+      <input class="inp" type="url" value="${escapeAttr(r.airbnb)}"
+        data-room-airbnb="${i}"
+        placeholder="https://www.airbnb.it/calendar/ical/....ics">
+      <label class="lbl">URL iCal Booking.com</label>
+      <input class="inp" type="url" value="${escapeAttr(r.booking)}"
+        data-room-booking="${i}"
+        placeholder="https://ical.booking.com/v1/export?t=....">`;
 
-      <label class="lbl">File iCal Booking.com</label>
-      <input class="inp" type="file" accept=".ics,text/calendar"
-        data-import-ics data-room="${i}" data-source="Booking">
-    </div>`;
+    if (detected) {
+      html += `<div class="detected">📅 Nome calendario rilevato: ${escapeHtml(detected)}</div>`;
+    }
+
+    html += `</div>`;
   });
 
-  /* Opzioni */
   html += `<div class="section-title">Opzioni</div>`;
   html += `<div class="card">
     <label class="row-toggle">
@@ -660,7 +945,17 @@ function viewSettings() {
       data-toggle="checkinTime">
   </div>`;
 
-  /* Azioni */
+  html += `<div class="card">
+    <label class="lbl">Proxy CORS</label>
+    <input class="inp" type="text" value="${escapeAttr(state.settings.proxy)}"
+      data-toggle="proxy" placeholder="https://api.allorigins.win/raw?url=">
+    <div class="hint">
+      <strong>Consigliato</strong>: crea un Cloudflare Worker personale e incolla qui il suo URL.
+      Esempio: <code>https://tuonome.workers.dev/?url=</code><br>
+      Il proxy pubblico predefinito può avere limitazioni con Airbnb/Booking.
+    </div>
+  </div>`;
+
   html += `<div class="card">
     <button class="btn btn-primary" data-action="saveSettings">💾 Salva impostazioni</button>
     <button class="btn btn-danger" data-action="resetCompleted">🗑️ Azzera pulizie completate</button>
@@ -668,8 +963,7 @@ function viewSettings() {
   </div>`;
 
   html += `<div class="footer-note">
-    Le pulizie vengono generate automaticamente dal giorno di check-out di ogni prenotazione.<br>
-    Nessun dato economico o sensibile viene mostrato al personale.
+    Per ogni stanza puoi configurare i calendari Airbnb e Booking, letti separatamente.
   </div>`;
 
   return html;
@@ -689,10 +983,13 @@ function showDetail(roomId, dk) {
   const guest = state.settings.showGuestName && outEv ? cleanGuestName(outEv.summary) : null;
   const needsCleaning = (st === 'checkout' || st === 'both');
   const done = isCompleted(dk, roomId);
+  const srcBadge = outEv && outEv.source
+    ? `<span class="src-badge direct">${escapeHtml(outEv.source)}</span>`
+    : '';
 
   let html = `<div class="modal-bg" data-modal-bg>
     <div class="modal">
-      <div class="modal-title">${escapeHtml(room.name)}</div>
+      <div class="modal-title">${escapeHtml(room.name)} ${srcBadge}</div>
       <div class="modal-date">${GIORNI[d.getDay()]} ${d.getDate()} ${MESI[d.getMonth()]} ${d.getFullYear()}</div>
       <div class="modal-status ${statusClass(st)}">${statusIcon(st)} ${statusLabel(st)}</div>
 
@@ -717,10 +1014,16 @@ function closeModal() { document.getElementById('modal').innerHTML = ''; }
 /* ============================================================
    SALVATAGGIO IMPOSTAZIONI
 ============================================================ */
-function saveSettingsFromForm() {
+async function saveSettingsFromForm() {
   document.querySelectorAll('[data-room-name]').forEach(inp => {
     const i = +inp.dataset.roomName;
     state.settings.rooms[i].name = inp.value.trim() || ('Stanza ' + (i + 1));
+  });
+  document.querySelectorAll('[data-room-airbnb]').forEach(inp => {
+    state.settings.rooms[+inp.dataset.roomAirbnb].airbnb = inp.value.trim();
+  });
+  document.querySelectorAll('[data-room-booking]').forEach(inp => {
+    state.settings.rooms[+inp.dataset.roomBooking].booking = inp.value.trim();
   });
   const gs = document.querySelector('[data-toggle="showGuestName"]');
   if (gs) state.settings.showGuestName = gs.checked;
@@ -731,7 +1034,11 @@ function saveSettingsFromForm() {
   const ci = document.querySelector('[data-toggle="checkinTime"]');
   if (ci && ci.value) state.settings.checkinTime = ci.value;
 
+  const px = document.querySelector('[data-toggle="proxy"]');
+  if (px) state.settings.proxy = px.value.trim();
+
   saveSettingsLS();
+  await saveCloudSettings();
 }
 
 /* ============================================================
@@ -748,7 +1055,7 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
 /* ============================================================
@@ -762,7 +1069,7 @@ document.getElementById('nav').addEventListener('click', e => {
   window.scrollTo(0, 0);
 });
 
-document.getElementById('main').addEventListener('click', e => {
+document.getElementById('main').addEventListener('click', async e => {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const action = btn.dataset.action;
@@ -782,8 +1089,14 @@ document.getElementById('main').addEventListener('click', e => {
     showDetail(+btn.dataset.room, btn.dataset.date);
   }
   else if (action === 'saveSettings') {
-    saveSettingsFromForm();
-    toast('Impostazioni salvate 💾');
+    try {
+      await saveSettingsFromForm();
+      toast('Impostazioni salvate su Firebase 💾');
+      refreshAll();
+    } catch (err) {
+      state.cloudError = 'Impossibile salvare le impostazioni su Firebase: ' + err.message;
+      render();
+    }
   }
   else if (action === 'resetCompleted') {
     if (confirm('Azzerare tutte le pulizie segnate come completate?')) {
@@ -793,26 +1106,15 @@ document.getElementById('main').addEventListener('click', e => {
       toast('Pulizie completate azzerate');
     }
   }
+  else if (action === 'refresh') {
+    refreshAll();
+  }
   else if (action === 'logout') {
     state.isAdmin = false;
     localStorage.removeItem('pulizie_admin');
     state.view = 'home';
     render();
     toast('Modalità amministratore disattivata');
-  }
-});
-
-document.getElementById('main').addEventListener('change', async e => {
-  const input = e.target.closest('[data-import-ics]');
-  const file = input && input.files && input.files[0];
-  if (!file) return;
-
-  try {
-    await importICSFile(file, Number(input.dataset.room), input.dataset.source);
-  } catch (err) {
-    state.errorMsg = err.message || 'Importazione del file non riuscita';
-    render();
-    toast('File iCal non valido');
   }
 });
 
@@ -841,6 +1143,32 @@ document.getElementById('modal').addEventListener('click', e => {
   if (e.target.hasAttribute('data-modal-bg')) closeModal();
 });
 
+document.getElementById('modal').addEventListener('submit', async e => {
+  const form = e.target.closest('[data-pin-form]');
+  if (!form) return;
+  e.preventDefault();
+
+  const submit = form.querySelector('[type="submit"]');
+  const error = form.querySelector('[data-auth-error]');
+  submit.disabled = true;
+  error.textContent = '';
+  error.hidden = false;
+  if (form.elements.password.value === PIN_ADMIN) {
+    state.isAdmin = true;
+    localStorage.setItem('pulizie_admin', '1');
+    closeModal();
+    render();
+    toast('Modalità amministratore attiva ✓');
+  } else {
+    error.textContent = 'Password errata.';
+    submit.disabled = false;
+  }
+});
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  if (!state.fetching) refreshAll();
+});
+
 document.getElementById('lockBtn').addEventListener('click', () => {
   if (state.isAdmin) {
     state.isAdmin = false;
@@ -849,24 +1177,44 @@ document.getElementById('lockBtn').addEventListener('click', () => {
     render();
     toast('Modalità amministratore disattivata');
   } else {
-    const pin = prompt('Inserisci il codice amministratore:');
-    if (pin === null) return;
-    if (pin === PIN_ADMIN) {
-      state.isAdmin = true;
-      localStorage.setItem('pulizie_admin', '1');
-      render();
-      toast('Modalità amministratore attiva ✓');
-    } else {
-      alert('Codice errato');
-    }
+    document.getElementById('modal').innerHTML = `
+      <div class="modal-bg" data-modal-bg>
+        <form class="modal" data-pin-form>
+          <div class="modal-title">Accesso amministratore</div>
+          <label class="lbl" for="adminPassword">Password</label>
+          <input class="inp" id="adminPassword" name="password" type="password"
+            inputmode="numeric" autocomplete="current-password" required>
+          <div class="error-box" data-auth-error hidden></div>
+          <button class="btn btn-primary" type="submit">Sblocca</button>
+          <button class="btn btn-close" type="button" data-action="closeModal">Annulla</button>
+        </form>
+      </div>`;
   }
 });
 
 /* ============================================================
-   AVVIO + AGGIORNAMENTO AUTOMATICO
+   AVVIO
 ============================================================ */
 loadAll();
 render();
+(async () => {
+  try {
+    await loadCloudSettings();
+  } catch (err) {
+    state.cloudError = 'Impossibile caricare le impostazioni da Firebase: ' + err.message;
+  }
+  render();
+  refreshAll();
+})();
+
+setInterval(() => { refreshAll(); }, AUTO_UPDATE_MS);
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const lu = state.lastUpdate ? new Date(state.lastUpdate).getTime() : 0;
+    if (Date.now() - lu > VISIBILITY_THRESHOLD_MS) refreshAll();
+  }
+});
 </script>
 </body>
 </html>

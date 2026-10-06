@@ -425,14 +425,42 @@ function parseICS(text) {
     const name = key.split(';')[0].toUpperCase();
     if (name === 'DTSTART') cur.start = extractDate(val);
     else if (name === 'DTEND') cur.end = extractDate(val);
-    else if (name === 'SUMMARY') cur.summary = val;
+    else if (name === 'SUMMARY') cur.summary = val.replace(/\\([\\;,])/g, '$1');
+    else if (name === 'STATUS') cur.status = val.toUpperCase();
   }
-  return { events: events.filter(e => e.start && e.end), calName };
+  return {
+    events: events.filter(e => e.start && e.end && e.status !== 'CANCELLED'),
+    calName
+  };
 }
 function extractDate(val) {
   const m = String(val).trim().match(/^(\d{4})(\d{2})(\d{2})/);
   if (!m) return null;
   return `${m[1]}-${m[2]}-${m[3]}`;
+}
+function isBlockedEvent(event) {
+  if (event.source === 'Booking') return false;
+
+  const summary = String(event.summary || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+  return /\b(not available|unavailable|blocked|non disponibile|bloccato|bloccata|date bloccate)\b/.test(summary);
+}
+function isReservationEvent(event) {
+  return event.status !== 'CANCELLED' && !isBlockedEvent(event);
+}
+function deduplicateEvents(events) {
+  const byStay = new Map();
+  for (const event of events) {
+    const key = `${event.roomId}|${event.start}|${event.end}`;
+    const current = byStay.get(key);
+    if (!current || (!isReservationEvent(current) && isReservationEvent(event))) {
+      byStay.set(key, event);
+    }
+  }
+  return Array.from(byStay.values());
 }
 
 /* ============================================================
@@ -470,11 +498,12 @@ async function fetchICS(url) {
 /* ============================================================
    COSTRUZIONE TASK PER STANZA
 ============================================================ */
-function buildTasksForRoom(room) {
+function buildTasksForRoom(room, roomId) {
   const tasks = [];
 
   if (room.airbnb && room.airbnb.trim()) {
     tasks.push({
+      roomId,
       url: room.airbnb.trim(),
       label: room.name + ' · Airbnb',
       sourceTag: 'Airbnb'
@@ -482,6 +511,7 @@ function buildTasksForRoom(room) {
   }
   if (room.booking && room.booking.trim()) {
     tasks.push({
+      roomId,
       url: room.booking.trim(),
       label: room.name + ' · Booking',
       sourceTag: 'Booking'
@@ -510,7 +540,7 @@ async function refreshAll() {
   const rooms = state.settings.rooms;
   const tasks = [];
   rooms.forEach((room, i) => {
-    tasks.push(...buildTasksForRoom(room));
+    tasks.push(...buildTasksForRoom(room, i));
   });
 
   if (tasks.length === 0) {
@@ -533,20 +563,18 @@ async function refreshAll() {
     try {
       const text = await fetchICS(task.url);
       const parsed = parseICS(text);
-      // roomId = ricavato dall'indice stanza
-      const roomId = rooms.findIndex(r => buildTasksForRoom(r).some(t => t.url === task.url));
-      const rid = roomId >= 0 ? roomId : 0;
       for (const e of parsed.events) {
         collected.push({
-          roomId: rid,
+          roomId: task.roomId,
           start: e.start,
           end: e.end,
           summary: e.summary || '',
+          status: e.status || '',
           source: task.sourceTag
         });
       }
-      if (parsed.calName && roomId >= 0) {
-        newDetected[roomId] = parsed.calName;
+      if (parsed.calName) {
+        newDetected[task.roomId] = parsed.calName;
       }
     } catch (err) {
       errors.push(`${task.label}: ${err.message}`);
@@ -555,13 +583,7 @@ async function refreshAll() {
     render();
   }
 
-  // Deduplicazione
-  const map = new Map();
-  for (const e of collected) {
-    const k = `${e.roomId}|${e.start}|${e.end}`;
-    if (!map.has(k)) map.set(k, e);
-  }
-  state.events = Array.from(map.values());
+  state.events = deduplicateEvents(collected);
 
   Object.assign(state.detectedNames, newDetected);
   saveDetectedLS();
@@ -592,9 +614,9 @@ function getCleaningsForDate(dateKey) {
   const n = state.settings.rooms.length;
   for (let r = 0; r < n; r++) {
     const evs = state.events.filter(e => e.roomId === r);
-    const outEv = evs.find(e => e.end === dateKey);
+    const outEv = evs.find(e => e.end === dateKey && isReservationEvent(e));
     if (!outEv) continue;
-    const inEv = evs.find(e => e.start === dateKey);
+    const inEv = evs.find(e => e.start === dateKey && isReservationEvent(e));
     res.push({
       roomId: r,
       hasCheckin: !!inEv,
@@ -608,8 +630,9 @@ function getCleaningsForDate(dateKey) {
 
 function getRoomStatus(roomId, dateKey) {
   const evs = state.events.filter(e => e.roomId === roomId);
-  const checkout = evs.some(e => e.end === dateKey);
-  const checkin  = evs.some(e => e.start === dateKey);
+  const reservations = evs.filter(isReservationEvent);
+  const checkout = reservations.some(e => e.end === dateKey);
+  const checkin  = reservations.some(e => e.start === dateKey);
   const occupied = evs.some(e => e.start <= dateKey && dateKey < e.end);
   if (checkout && checkin) return 'both';
   if (checkout) return 'checkout';
@@ -976,8 +999,8 @@ function showDetail(roomId, dk) {
   const room = state.settings.rooms[roomId];
   const st = getRoomStatus(roomId, dk);
   const evs = state.events.filter(e => e.roomId === roomId);
-  const outEv = evs.find(e => e.end === dk);
-  const inEv  = evs.find(e => e.start === dk);
+  const outEv = evs.find(e => e.end === dk && isReservationEvent(e));
+  const inEv  = evs.find(e => e.start === dk && isReservationEvent(e));
   const d = fromKey(dk);
 
   const guest = state.settings.showGuestName && outEv ? cleanGuestName(outEv.summary) : null;

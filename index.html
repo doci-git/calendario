@@ -468,12 +468,23 @@ function deduplicateEvents(events) {
 ============================================================ */
 async function fetchICS(url) {
   const proxy = (state.settings.proxy || '').trim();
-  const target = proxy ? proxy + encodeURIComponent(url) : url;
 
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), 20000);
 
   try {
+    let target = url;
+    if (proxy) {
+      let proxyUrl;
+      try {
+        proxyUrl = new URL(proxy);
+      } catch {
+        throw new Error('URL del proxy non valido');
+      }
+      proxyUrl.searchParams.set('url', url);
+      target = proxyUrl.toString();
+    }
+
     const res = await fetch(target, { cache: 'no-store', signal: ctrl.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -971,10 +982,10 @@ function viewSettings() {
   html += `<div class="card">
     <label class="lbl">Proxy CORS</label>
     <input class="inp" type="text" value="${escapeAttr(state.settings.proxy)}"
-      data-toggle="proxy" placeholder="https://api.allorigins.win/raw?url=">
+      data-toggle="proxy" placeholder="https://nome-worker.nome-account.workers.dev/">
     <div class="hint">
       <strong>Consigliato</strong>: crea un Cloudflare Worker personale e incolla qui il suo URL.
-      Esempio: <code>https://tuonome.workers.dev/?url=</code><br>
+      L'app aggiunge automaticamente il parametro <code>?url=</code> alla richiesta.<br>
       Il proxy pubblico predefinito può avere limitazioni con Airbnb/Booking.
     </div>
   </div>`;

@@ -6,13 +6,19 @@ disponibile dopo l’accesso, mostra calendario e riepiloghi.
 
 ## Area Admin e dati
 
+- All’apertura viene richiesta a Staff e Admin la password condivisa `2244`.
+  Dopo lo sblocco resta valida nella scheda corrente fino alla sua chiusura.
+  È un blocco semplice dell’interfaccia, non una misura di sicurezza: la password
+  è inclusa nel codice pubblico e può essere vista nel sorgente della pagina.
 - L’accesso usa Firebase Authentication con l’account amministratore
   `docimusa@gmail.com`; il provider Email/Password deve essere attivo e l’indirizzo
   deve essere verificato.
 - Il calendario e il riepilogo settimanale vanno da lunedì a domenica inclusi. Il costo
   settimanale è pulizie previste × 12 €. Le pulizie previste con data precedente a
   oggi sono considerate effettuate automaticamente; il riepilogo mensile calcola il
-  costo staff su queste pulizie passate. Non è richiesta una conferma manuale.
+  costo staff su queste pulizie passate. Non è richiesta una conferma manuale. Nella
+  vista settimanale sono mostrati solo i giorni con pulizie; si cambia settimana con
+  le frecce.
 - Le pulizie previste derivano dai check-out. Una camera produce al massimo una
   pulizia per data, anche con check-in nello stesso giorno o eventi duplicati nei
   due calendari. I blocchi riconoscibili dal testo iCal sono esclusi; un evento
@@ -26,6 +32,7 @@ disponibile dopo l’accesso, mostra calendario e riepiloghi.
 Le impostazioni iCal restano nel documento `apps/pulizie`, leggibile dall’app per
 consentire allo Staff la sincronizzazione. Come ogni applicazione statica che legge
 iCal dal browser, i relativi URL non sono segreti rispetto a chi può usare l’app.
+La password condivisa iniziale non sostituisce le regole di sicurezza Firebase.
 Le conferme e i costi non sono esposti allo Staff: le regole Firestore li riservano
 all’account amministratore.
 

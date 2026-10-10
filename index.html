@@ -19,6 +19,19 @@ body{
   padding-top:92px;padding-bottom:84px;min-height:100%;
   -webkit-font-smoothing:antialiased;
 }
+body.page-locked>header,
+body.page-locked>main,
+body.page-locked>nav,
+body.page-locked>#modal,
+body.page-locked>#toast{visibility:hidden;pointer-events:none}
+#accessGate{position:fixed;inset:0;z-index:400;display:flex;align-items:center;
+  justify-content:center;padding:20px;background:var(--bg)}
+.access-card{width:100%;max-width:380px;background:#fff;border-radius:20px;
+  padding:24px;box-shadow:0 8px 30px rgba(15,23,42,.12)}
+.access-title{font-size:22px;font-weight:800;margin-bottom:6px}
+.access-subtitle{font-size:14px;color:var(--muted);margin-bottom:18px}
+.access-error{font-size:13px;color:var(--danger);font-weight:700;margin-top:10px}
+body:not(.page-locked) #accessGate{display:none}
 header{
   position:fixed;top:0;left:0;right:0;z-index:100;
   background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;
@@ -124,12 +137,23 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .admin-controls{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .admin-controls .btn{margin-top:0;min-height:46px}
 .admin-period{flex:1;text-align:center;font-weight:800}
-.admin-period-input{width:100%;max-width:170px;margin:0 auto}
 .admin-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
 .admin-summary .stat{padding:12px 5px}
 .admin-summary .stat-num{font-size:22px}
 .admin-summary.monthly{grid-template-columns:repeat(2,minmax(0,1fr))}
 .admin-day-list{margin-top:14px}
+.admin-week-day{margin-bottom:16px}
+.admin-week-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  font-size:12.5px;font-weight:800;color:var(--muted);margin:0 4px 6px}
+.admin-week-count{font-size:11px;font-weight:600}
+.admin-week-room{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;
+  gap:8px;background:#fff;border-radius:11px;padding:9px 10px;margin:5px 0;
+  border-left:4px solid var(--warning);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.admin-week-room.done{border-left-color:var(--success);background:var(--success-bg)}
+.admin-week-room.blocked{border-left-color:var(--muted);background:#f1f5f9}
+.admin-week-room-name{font-size:13px;font-weight:800}
+.admin-week-room-state{font-size:10.5px;color:var(--muted);font-weight:700}
+.admin-week-room .btn{width:auto;margin:0;padding:8px 10px;font-size:11px;min-height:36px}
 .admin-cleaning{background:#fff;border-radius:13px;padding:12px;margin:8px 0;
   border-left:5px solid var(--warning);box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .admin-cleaning.done{border-left-color:var(--success);background:var(--success-bg)}
@@ -213,6 +237,9 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
   .admin-summary .stat-num{font-size:19px}
   .admin-summary .stat-lbl{font-size:9px}
   .admin-day{min-height:54px;font-size:12px;padding:4px 2px}
+  .admin-week-room{grid-template-columns:minmax(0,1fr) auto;gap:5px 8px}
+  .admin-week-room-state{grid-column:1}
+  .admin-week-room .btn{grid-column:2;grid-row:1 / span 2}
 }
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
   background:#0f172a;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;
@@ -221,7 +248,45 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
-<body>
+<body class="page-locked">
+
+<div id="accessGate">
+  <form class="access-card" id="accessForm">
+    <div class="access-title">🧹 MusArt Pulizie</div>
+    <div class="access-subtitle">Inserisci la password per accedere.</div>
+    <label class="lbl" for="accessPassword">Password</label>
+    <input class="inp" id="accessPassword" type="password" inputmode="numeric"
+      autocomplete="current-password" required autofocus>
+    <div class="access-error" id="accessError" role="alert" hidden>Password non corretta.</div>
+    <button class="btn btn-primary" type="submit">Entra</button>
+  </form>
+</div>
+<script>
+(() => {
+  const ACCESS_PASSWORD = '2244';
+  const SESSION_KEY = 'musart_access_granted';
+  const form = document.getElementById('accessForm');
+  const input = document.getElementById('accessPassword');
+  const error = document.getElementById('accessError');
+
+  function unlock() {
+    document.body.classList.remove('page-locked');
+    document.getElementById('accessGate').remove();
+  }
+
+  if (sessionStorage.getItem(SESSION_KEY) === '1') unlock();
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (input.value !== ACCESS_PASSWORD) {
+      error.hidden = false;
+      input.select();
+      return;
+    }
+    sessionStorage.setItem(SESSION_KEY, '1');
+    unlock();
+  });
+})();
+</script>
 
 <header>
   <div class="h-row">
@@ -1138,7 +1203,7 @@ function adminControls(date, monthly) {
     <div class="admin-period">
       ${monthly
         ? `<input class="inp admin-month-input" type="month" value="${monthInput}" data-admin-month>`
-        : `<input class="inp admin-period-input" type="date" value="${toKey(date)}" data-admin-date>`}
+        : ''}
       <div class="admin-note">${monthly
         ? `${MESI[date.getMonth()]} ${date.getFullYear()}`
         : `Settimana ${dateRangeLabel(mondayOfWeek(date), addDays(mondayOfWeek(date), 6))}`}</div>
@@ -1180,6 +1245,33 @@ function renderAdminDay(dateKey) {
   return entries.map(entry => renderAdminCleaning(dateKey, entry)).join('');
 }
 
+function renderAdminWeekDay(dateKey, entries) {
+  const date = fromKey(dateKey);
+  const roomLabel = entries.length === 1 ? '1 camera' : `${entries.length} camere`;
+  const rooms = entries.map(entry => {
+    const room = state.settings.rooms[entry.roomId];
+    if (!room) return '';
+    const status = entry.blocked ? 'Blocco escluso' :
+      entry.completed ? 'Effettuata' : 'Da effettuare';
+    const action = entry.blocked ? 'Ripristina pulizia' : 'Segna blocco';
+    const rowClass = entry.blocked ? 'blocked' : entry.completed ? 'done' : '';
+    return `<div class="admin-week-room ${rowClass}">
+      <span class="admin-week-room-name">🧹 ${escapeHtml(room.name)}</span>
+      <span class="admin-week-room-state">${status}</span>
+      <button class="btn btn-block" data-action="toggleBlock"
+        data-room="${entry.roomId}" data-date="${dateKey}">${action}</button>
+    </div>`;
+  }).join('');
+
+  return `<div class="admin-week-day">
+    <div class="admin-week-heading">
+      <span>${GIORNI[date.getDay()].toUpperCase()} — ${formatCalendarDay(dateKey)}</span>
+      <span class="admin-week-count">${roomLabel}</span>
+    </div>
+    ${rooms}
+  </div>`;
+}
+
 function viewAdmin() {
   if (!state.isAdmin) return '<div class="empty">🔒 Accesso riservato all’amministratore.</div>';
 
@@ -1210,14 +1302,16 @@ function viewAdmin() {
     html += renderAdminStats(getAdminSummary(start, end), false);
     html += adminControls(date, false);
     html += '<div class="admin-day-list">';
+    let daysWithCleanings = 0;
     for (let offset = 0; offset < 7; offset++) {
       const day = addDays(start, offset);
       const key = toKey(day);
-      html += `<div class="day-block">
-        <div class="day-header">${GIORNI[day.getDay()].toUpperCase()} — ${formatCalendarDay(key)}</div>
-        ${renderAdminDay(key)}
-      </div>`;
+      const entries = getAdminEntriesForDate(key);
+      if (!entries.length) continue;
+      html += renderAdminWeekDay(key, entries);
+      daysWithCleanings++;
     }
+    if (!daysWithCleanings) html += '<div class="empty">Nessuna pulizia prevista questa settimana.</div>';
     html += '</div>';
   }
   html += `<div class="admin-note">Le pulizie previste derivano dai check-out iCal. Quelle dei giorni passati sono conteggiate come effettuate; quelle di oggi e future restano da fare. Puoi escludere un blocco calendario.</div>`;
@@ -1526,10 +1620,7 @@ document.getElementById('main').addEventListener('input', e => {
 });
 
 document.getElementById('main').addEventListener('change', e => {
-  if (e.target.matches('[data-admin-date]') && e.target.value) {
-    state.adminDate = e.target.value;
-    render();
-  } else if (e.target.matches('[data-admin-month]') && e.target.value) {
+  if (e.target.matches('[data-admin-month]') && e.target.value) {
     state.adminDate = `${e.target.value}-01`;
     render();
   }

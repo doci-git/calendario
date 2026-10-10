@@ -104,6 +104,60 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .legend .lg{font-size:16px}
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;
   box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.room-settings{padding:0;overflow:hidden}
+.room-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px;font-size:15px;font-weight:800;cursor:pointer;list-style:none}
+.room-summary::-webkit-details-marker{display:none}
+.room-settings[open] .room-summary{border-bottom:1px solid var(--border)}
+.room-fields{padding:0 16px 16px}
+.room-chevron{font-size:20px;color:var(--muted);transition:transform .15s}
+.room-settings[open] .room-chevron{transform:rotate(180deg)}
+.room-section{margin:18px 0 8px}
+.room-section-summary{display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;list-style:none;background:#fff;border-radius:14px;padding:13px 14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);font-size:12px;font-weight:800;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.room-section-summary::-webkit-details-marker{display:none}
+.room-section[open]>.room-section-summary{border-radius:14px 14px 0 0}
+.room-section-content{background:#f8fafc;border-radius:0 0 14px 14px;padding:10px}
+.room-section-content>.room-settings:last-child{margin-bottom:0}
+.admin-controls{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.admin-controls .btn{margin-top:0;min-height:46px}
+.admin-period{flex:1;text-align:center;font-weight:800}
+.admin-period-input{width:100%;max-width:170px;margin:0 auto}
+.admin-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.admin-summary .stat{padding:12px 5px}
+.admin-summary .stat-num{font-size:22px}
+.admin-summary.monthly{grid-template-columns:repeat(2,minmax(0,1fr))}
+.admin-day-list{margin-top:14px}
+.admin-cleaning{background:#fff;border-radius:13px;padding:12px;margin:8px 0;
+  border-left:5px solid var(--warning);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.admin-cleaning.done{border-left-color:var(--success);background:var(--success-bg)}
+.admin-cleaning.blocked{border-left-color:var(--muted);background:#f1f5f9}
+.admin-cleaning-top{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  font-weight:800}
+.admin-cleaning-state{font-size:11px;color:var(--muted);font-weight:700}
+.admin-cleaning-actions{display:flex;gap:8px}
+.admin-cleaning-actions .btn{font-size:13px;padding:10px 8px;min-height:42px}
+.admin-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.admin-calendar-head{font-size:10px;text-align:center;font-weight:800;color:var(--muted);
+  padding:4px 0;text-transform:uppercase}
+.admin-day{min-width:0;min-height:62px;border:1px solid var(--border);border-radius:9px;
+  background:#fff;color:var(--text);padding:5px 3px;text-align:left;cursor:pointer;
+  font:inherit}
+.admin-day.outside{opacity:.45}
+.admin-day.selected{outline:2px solid var(--primary);outline-offset:1px}
+.admin-day.has-pending{background:var(--warning-bg);border-color:#fed7aa}
+.admin-day.all-done{background:var(--success-bg);border-color:#86efac}
+.admin-day-count{display:block;font-size:10px;color:var(--muted);margin-top:5px;line-height:1.15}
+.admin-calendar-nav{display:flex;align-items:center;gap:8px;margin:10px 0}
+.admin-calendar-nav .btn{margin:0;min-width:46px;width:auto;padding:10px 14px}
+.admin-calendar-nav .admin-period{min-width:0}
+.admin-month-input{width:100%;max-width:190px;margin:0 auto}
+.admin-day-title{font-size:14px;font-weight:800;color:var(--text);margin:16px 0 8px}
+.admin-note{font-size:12px;color:var(--muted);line-height:1.5;margin:8px 2px}
+.admin-cleaning-actions .btn-success{background:#dcfce7;color:#166534}
+.admin-cleaning-actions .btn-block{background:#e2e8f0;color:#334155}
 .card-title{font-size:15px;font-weight:800;margin-bottom:4px}
 .card-sub{font-size:13px;color:var(--muted);margin-bottom:10px}
 .lbl{display:block;font-size:11.5px;font-weight:800;color:var(--muted);
@@ -154,6 +208,13 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 @media(min-width:480px){.modal-bg{align-items:center}}
+@media(max-width:420px){
+  .admin-summary{gap:5px}
+  .admin-summary .stat{padding:10px 3px}
+  .admin-summary .stat-num{font-size:19px}
+  .admin-summary .stat-lbl{font-size:9px}
+  .admin-day{min-height:54px;font-size:12px;padding:4px 2px}
+}
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
   background:#0f172a;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;
   font-weight:700;z-index:300;opacity:0;pointer-events:none;transition:.25s;
@@ -188,11 +249,20 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {
   doc,
+  collection,
+  deleteDoc,
   getDoc,
+  getDocs,
   getFirestore,
   serverTimestamp,
   setDoc
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 
 const firebaseApp = initializeApp({
   apiKey: 'AIzaSyCWBSF491f3qG6F7MNg4Qsiz0B_9h98Ce8',
@@ -203,12 +273,16 @@ const firebaseApp = initializeApp({
   appId: '1:510169773023:web:fd4150eab5afa5960b8a6a'
 });
 const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
 const settingsRef = doc(db, 'apps', 'pulizie');
+const cleaningRecordsRef = collection(db, 'apps', 'pulizieAdmin', 'cleanings');
+const blockOverridesRef = collection(db, 'apps', 'pulizieAdmin', 'blocked');
 
 /* ============================================================
    COSTANTI
 ============================================================ */
-const PIN_ADMIN = '1234091992';
+const ADMIN_EMAIL = 'docimusa@gmail.com';
+const CLEANING_COST = 12;
 const AUTO_UPDATE_MS = 60 * 60 * 1000;
 const VISIBILITY_THRESHOLD_MS = 30 * 60 * 1000;
 const STALE_MS = 90 * 60 * 1000;
@@ -246,13 +320,20 @@ const state = {
   settings: null,
   events: [],
   detectedNames: {},
+  cleaningRecords: {},
+  blockOverrides: {},
+  adminDate: toKey(new Date()),
+  adminPeriod: 'week',
   isAdmin: false,
   lastUpdate: null,
   fetching: false,
   fetchProgress: { done: 0, total: 0 },
   errorMsg: null,
   lastErrorAt: null,
-  cloudError: null
+  cloudError: null,
+  adminError: null,
+  adminActionError: null,
+  blockError: null
 };
 
 /* ============================================================
@@ -296,7 +377,11 @@ function loadAll() {
 
   state.lastUpdate = localStorage.getItem('pulizie_lastupdate') || null;
   state.lastErrorAt = localStorage.getItem('pulizie_lasterror') || null;
-  state.isAdmin = localStorage.getItem('pulizie_admin') === '1';
+  try {
+    state.blockOverrides = JSON.parse(localStorage.getItem('pulizie_blocked') || '{}');
+  } catch {
+    state.blockOverrides = {};
+  }
 }
 function normalizeSettings(settings) {
   const normalized = Object.assign({}, DEFAULT_SETTINGS, settings, {
@@ -324,7 +409,8 @@ async function loadCloudSettings() {
       throw new Error('Le impostazioni salvate su Firebase non sono valide.');
     }
     state.settings = normalizeSettings(cloudSettings);
-  } else {
+  } else if (auth.currentUser && auth.currentUser.email === ADMIN_EMAIL &&
+      auth.currentUser.emailVerified) {
     await setDoc(settingsRef, {
       settings: state.settings,
       updatedAt: serverTimestamp()
@@ -341,6 +427,66 @@ async function saveCloudSettings() {
 }
 function saveSettingsLS() { localStorage.setItem('pulizie_settings_v3', JSON.stringify(state.settings)); }
 function saveDetectedLS() { localStorage.setItem('pulizie_detected', JSON.stringify(state.detectedNames)); }
+async function loadBlockOverrides() {
+  const snapshot = await getDocs(blockOverridesRef);
+  const overrides = {};
+  snapshot.forEach(item => {
+    const data = item.data();
+    if (Number.isInteger(data.roomId) && typeof data.date === 'string') {
+      overrides[cleaningKey(data.roomId, data.date)] = data;
+    }
+  });
+  state.blockOverrides = overrides;
+  localStorage.setItem('pulizie_blocked', JSON.stringify(overrides));
+  state.blockError = null;
+}
+async function loadAdminRecords() {
+  const snapshot = await getDocs(cleaningRecordsRef);
+  const records = {};
+  snapshot.forEach(item => {
+    const data = item.data();
+    if (Number.isInteger(data.roomId) && typeof data.date === 'string' &&
+        data.status === 'done') {
+      records[cleaningKey(data.roomId, data.date)] = data;
+    }
+  });
+  state.cleaningRecords = records;
+  state.adminError = null;
+  state.adminActionError = null;
+}
+async function saveCleaningRecord(roomId, dateKey, done) {
+  const id = cleaningKey(roomId, dateKey);
+  if (done) {
+    await setDoc(doc(db, 'apps', 'pulizieAdmin', 'cleanings', id), {
+      roomId,
+      date: dateKey,
+      status: 'done',
+      updatedAt: serverTimestamp(),
+      updatedBy: ADMIN_EMAIL
+    });
+    state.cleaningRecords[id] = { roomId, date: dateKey, status: 'done' };
+  } else {
+    await deleteDoc(doc(db, 'apps', 'pulizieAdmin', 'cleanings', id));
+    delete state.cleaningRecords[id];
+  }
+}
+async function saveBlockOverride(roomId, dateKey, blocked) {
+  const id = cleaningKey(roomId, dateKey);
+  if (blocked) {
+    const data = {
+      roomId,
+      date: dateKey,
+      updatedAt: serverTimestamp(),
+      updatedBy: ADMIN_EMAIL
+    };
+    await setDoc(doc(db, 'apps', 'pulizieAdmin', 'blocked', id), data);
+    state.blockOverrides[id] = data;
+  } else {
+    await deleteDoc(doc(db, 'apps', 'pulizieAdmin', 'blocked', id));
+    delete state.blockOverrides[id];
+  }
+  localStorage.setItem('pulizie_blocked', JSON.stringify(state.blockOverrides));
+}
 
 /* ============================================================
    DATE
@@ -359,6 +505,13 @@ function addDays(d, n) {
   x.setDate(x.getDate() + n);
   return x;
 }
+function mondayOfWeek(d) {
+  return addDays(d, -((d.getDay() + 6) % 7));
+}
+function dateRangeLabel(start, end) {
+  return `${start.getDate()} ${MESI_BREVI[start.getMonth()]} – ${end.getDate()} ${MESI_BREVI[end.getMonth()]}`;
+}
+function cleaningKey(roomId, dateKey) { return `${roomId}_${dateKey}`; }
 function shortDate(d) { return d.getDate() + ' ' + MESI_BREVI[d.getMonth()]; }
 function formatCalendarDay(dateKey) {
   const date = fromKey(dateKey);
@@ -433,14 +586,12 @@ function extractDate(val) {
   return `${m[1]}-${m[2]}-${m[3]}`;
 }
 function isBlockedEvent(event) {
-  if (event.source === 'Booking') return false;
-
   const summary = String(event.summary || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
-  return /\b(not available|unavailable|blocked|non disponibile|bloccato|bloccata|date bloccate)\b/.test(summary);
+  return /\b(not available|unavailable|blocked|not bookable|unbookable|closed|non disponibile|non prenotabile|bloccato|bloccata|date bloccate|chiuso|chiusa)\b/.test(summary);
 }
 function isReservationEvent(event) {
   return event.status !== 'CANCELLED' && !isBlockedEvent(event);
@@ -545,6 +696,12 @@ function buildTasksForRoom(room, roomId) {
 async function refreshAll() {
   if (state.fetching) return;
 
+  try {
+    await loadBlockOverrides();
+  } catch (err) {
+    state.blockError = 'Impossibile aggiornare i blocchi salvati su Firebase: ' + err.message;
+  }
+
   if (state.view === 'settings' && state.isAdmin) {
     try {
       await saveSettingsFromForm();
@@ -636,6 +793,7 @@ function getCleaningsForDate(dateKey) {
   const res = [];
   const n = state.settings.rooms.length;
   for (let r = 0; r < n; r++) {
+    if (state.blockOverrides[cleaningKey(r, dateKey)]) continue;
     const evs = state.events.filter(e => e.roomId === r);
     const outEv = getCheckoutEvent(evs, dateKey);
     if (!outEv) continue;
@@ -669,7 +827,8 @@ function getRoomStatus(roomId, dateKey) {
   const evs = state.events.filter(e => e.roomId === roomId);
   const reservations = evs.filter(isReservationEvent);
   const checkin  = reservations.some(e => e.start === dateKey);
-  const checkout = Boolean(getCheckoutEvent(evs, dateKey));
+  const checkout = !state.blockOverrides[cleaningKey(roomId, dateKey)] &&
+    Boolean(getCheckoutEvent(evs, dateKey));
   const occupied = evs.some(e => e.start <= dateKey && dateKey < e.end);
   if (checkout && checkin) return 'both';
   if (checkout) return 'checkout';
@@ -726,6 +885,9 @@ function computeSyncStatus() {
    RENDER
 ============================================================ */
 function render() {
+  if (!state.isAdmin && (state.view === 'admin' || state.view === 'settings')) {
+    state.view = 'home';
+  }
   const sync = computeSyncStatus();
   document.getElementById('syncDot').className = 'sync-dot ' + sync.dot;
 
@@ -746,10 +908,15 @@ function render() {
   const main = document.getElementById('main');
   if (state.view === 'home') main.innerHTML = viewHome();
   else if (state.view === 'calendar') main.innerHTML = viewCalendar();
+  else if (state.view === 'admin') main.innerHTML = viewAdmin();
   else if (state.view === 'settings') main.innerHTML = viewSettings();
   if (state.cloudError) {
     main.insertAdjacentHTML('afterbegin',
       `<div class="error-box">⚠️ <strong>Sincronizzazione Firebase</strong><br>${escapeHtml(state.cloudError)}</div>`);
+  }
+  if (state.blockError) {
+    main.insertAdjacentHTML('afterbegin',
+      `<div class="error-box">⚠️ <strong>Blocchi calendario</strong><br>${escapeHtml(state.blockError)}</div>`);
   }
 }
 
@@ -758,7 +925,10 @@ function renderNav() {
     { id:'home',     icon:'🏠', label:'Pulizie' },
     { id:'calendar', icon:'📅', label:'Calendario' }
   ];
-  if (state.isAdmin) items.push({ id:'settings', icon:'⚙️', label:'Impostazioni' });
+  if (state.isAdmin) {
+    items.push({ id:'admin', icon:'📋', label:'Admin' });
+    items.push({ id:'settings', icon:'⚙️', label:'Impostazioni' });
+  }
 
   document.getElementById('nav').innerHTML = items.map(it => `
     <button class="nav-btn ${state.view === it.id ? 'active' : ''}" data-view="${it.id}">
@@ -926,6 +1096,225 @@ function viewCalendar() {
 }
 
 /* ============================================================
+   AREA ADMIN
+============================================================ */
+function getAdminEntriesForDate(dateKey) {
+  const entries = new Map();
+  getCleaningsForDate(dateKey).forEach(cleaning => {
+    const id = cleaningKey(cleaning.roomId, dateKey);
+    entries.set(cleaning.roomId, {
+      ...cleaning,
+      completed: Boolean(state.cleaningRecords[id]),
+      blocked: false
+    });
+  });
+
+  Object.values(state.cleaningRecords).forEach(record => {
+    if (record.date !== dateKey || entries.has(record.roomId)) return;
+    entries.set(record.roomId, {
+      roomId: record.roomId,
+      completed: true,
+      blocked: Boolean(state.blockOverrides[cleaningKey(record.roomId, dateKey)])
+    });
+  });
+
+  Object.values(state.blockOverrides).forEach(override => {
+    if (override.date !== dateKey || entries.has(override.roomId)) return;
+    const hasCheckout = state.events.some(
+      event => event.roomId === override.roomId && event.end === dateKey
+    );
+    if (hasCheckout) {
+      entries.set(override.roomId, {
+        roomId: override.roomId,
+        completed: false,
+        blocked: true
+      });
+    }
+  });
+  return Array.from(entries.values()).sort((a, b) => a.roomId - b.roomId);
+}
+
+function getAdminSummary(start, end) {
+  const summary = { planned: 0, completed: 0 };
+  for (let date = new Date(start); date < end; date = addDays(date, 1)) {
+    getAdminEntriesForDate(toKey(date)).forEach(entry => {
+      if (entry.blocked && !entry.completed) return;
+      summary.planned++;
+      if (entry.completed) summary.completed++;
+    });
+  }
+  return summary;
+}
+
+function renderAdminStats(summary, monthly) {
+  const tiles = monthly
+    ? [
+      ['Pulizie previste', summary.planned],
+      ['Pulizie effettuate', summary.completed],
+      ['Costo staff', formatCurrency(summary.completed * CLEANING_COST)],
+      ['Cambi biancheria', summary.planned]
+    ]
+    : [
+      ['Pulizie previste', summary.planned],
+      ['Costo pulizie', formatCurrency(summary.planned * CLEANING_COST)],
+      ['Cambi biancheria', summary.planned]
+    ];
+  return `<div class="admin-summary ${monthly ? 'monthly' : ''}">
+    ${tiles.map(([label, value]) => `<div class="stat">
+      <div class="stat-num">${value}</div>
+      <div class="stat-lbl">${label}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('it-IT', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+function adminControls(date, monthly) {
+  const monthInput = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  return `<div class="admin-calendar-nav">
+    <button class="btn btn-outline" data-action="adminPrevious" aria-label="Periodo precedente">‹</button>
+    <div class="admin-period">
+      ${monthly
+        ? `<input class="inp admin-month-input" type="month" value="${monthInput}" data-admin-month>`
+        : `<input class="inp admin-period-input" type="date" value="${toKey(date)}" data-admin-date>`}
+      <div class="admin-note">${monthly
+        ? `${MESI[date.getMonth()]} ${date.getFullYear()}`
+        : `Settimana ${dateRangeLabel(mondayOfWeek(date), addDays(mondayOfWeek(date), 7))}`}</div>
+    </div>
+    <button class="btn btn-outline" data-action="adminNext" aria-label="Periodo successivo">›</button>
+  </div>`;
+}
+
+function renderAdminCleaning(dateKey, entry) {
+  const room = state.settings.rooms[entry.roomId];
+  if (!room) return '';
+  const classes = ['admin-cleaning'];
+  if (entry.completed) classes.push('done');
+  else if (entry.blocked) classes.push('blocked');
+
+  let actionButtons = '';
+  if (entry.completed) {
+    actionButtons += `<button class="btn btn-outline" data-action="toggleCleaning"
+      data-room="${entry.roomId}" data-date="${dateKey}">Correggi stato</button>`;
+  } else if (entry.blocked) {
+    actionButtons += `<button class="btn btn-block" data-action="toggleBlock"
+      data-room="${entry.roomId}" data-date="${dateKey}">Ripristina pulizia</button>`;
+  } else {
+    actionButtons += `<button class="btn btn-success" data-action="toggleCleaning"
+      data-room="${entry.roomId}" data-date="${dateKey}">Segna effettuata</button>
+      <button class="btn btn-block" data-action="toggleBlock"
+        data-room="${entry.roomId}" data-date="${dateKey}">Segna blocco</button>`;
+  }
+  if (entry.completed && entry.blocked) {
+    actionButtons += `<button class="btn btn-block" data-action="toggleBlock"
+      data-room="${entry.roomId}" data-date="${dateKey}">Ripristina pulizia</button>`;
+  }
+
+  const status = entry.completed ? '✅ Effettuata' :
+    entry.blocked ? '⛔ Blocco escluso' : 'Da effettuare';
+  return `<div class="${classes.join(' ')}">
+    <div class="admin-cleaning-top">
+      <span>🧹 ${escapeHtml(room.name)}</span>
+      <span class="admin-cleaning-state">${status}</span>
+    </div>
+    <div class="admin-cleaning-actions">${actionButtons}</div>
+  </div>`;
+}
+
+function renderAdminDay(dateKey) {
+  const entries = getAdminEntriesForDate(dateKey);
+  if (!entries.length) return '<div class="no-clean">Nessuna pulizia prevista</div>';
+  return entries.map(entry => renderAdminCleaning(dateKey, entry)).join('');
+}
+
+function viewAdmin() {
+  if (!state.isAdmin) return '<div class="empty">🔒 Accesso riservato all’amministratore.</div>';
+  if (state.adminError) {
+    return `<div class="view-title">📋 Area Admin</div>
+      <div class="error-box">Impossibile caricare i dati Admin: ${escapeHtml(state.adminError)}</div>`;
+  }
+
+  const date = fromKey(state.adminDate);
+  const monthly = state.adminPeriod === 'month';
+  let html = `<div class="view-title">📋 Area Admin</div>
+    <div class="admin-controls">
+      <button class="btn ${!monthly ? 'btn-primary' : 'btn-outline'}"
+        data-action="adminPeriod" data-period="week">Settimana</button>
+      <button class="btn ${monthly ? 'btn-primary' : 'btn-outline'}"
+        data-action="adminPeriod" data-period="month">Mese</button>
+    </div>
+    ${state.adminActionError
+      ? `<div class="error-box">${escapeHtml(state.adminActionError)}</div>`
+      : ''}`;
+
+  if (monthly) {
+    const start = new Date(date.getFullYear(), date.getMonth(), 1);
+    const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    html += renderAdminStats(getAdminSummary(start, end), true);
+    html += adminControls(date, true);
+    html += renderAdminMonth(date);
+    html += `<div class="admin-day-title">${formatCalendarDay(state.adminDate)}</div>
+      ${renderAdminDay(state.adminDate)}`;
+  } else {
+    const start = mondayOfWeek(date);
+    const end = addDays(start, 7);
+    html += renderAdminStats(getAdminSummary(start, end), false);
+    html += adminControls(date, false);
+    html += '<div class="admin-day-list">';
+    for (let offset = 0; offset < 7; offset++) {
+      const day = addDays(start, offset);
+      const key = toKey(day);
+      html += `<div class="day-block">
+        <div class="day-header">${GIORNI[day.getDay()].toUpperCase()} — ${formatCalendarDay(key)}</div>
+        ${renderAdminDay(key)}
+      </div>`;
+    }
+    html += '</div>';
+  }
+  html += `<div class="admin-note">Le pulizie previste derivano dai check-out iCal. Il costo mensile conteggia solo le pulizie segnate come effettuate. Puoi correggere una conferma o escludere un blocco calendario.</div>`;
+  return html;
+}
+
+function renderAdminMonth(date) {
+  const first = new Date(date.getFullYear(), date.getMonth(), 1);
+  const offset = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const cellCount = Math.ceil((offset + daysInMonth) / 7) * 7;
+  let html = '<div class="card"><div class="admin-calendar">';
+  ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].forEach(day => {
+    html += `<div class="admin-calendar-head">${day}</div>`;
+  });
+  for (let cell = 0; cell < cellCount; cell++) {
+    const day = addDays(first, cell - offset);
+    const key = toKey(day);
+    const inMonth = day.getMonth() === date.getMonth();
+    const entries = inMonth ? getAdminEntriesForDate(key) : [];
+    const active = entries.filter(entry => !entry.blocked || entry.completed);
+    const completed = active.filter(entry => entry.completed).length;
+    const classes = ['admin-day'];
+    if (!inMonth) classes.push('outside');
+    if (key === state.adminDate) classes.push('selected');
+    if (active.length && completed === active.length) classes.push('all-done');
+    else if (active.length) classes.push('has-pending');
+    html += `<button class="${classes.join(' ')}" ${inMonth
+      ? `data-action="selectAdminDate" data-date="${key}"`
+      : 'disabled'} aria-label="${inMonth
+        ? `${day.getDate()} ${MESI[day.getMonth()]}, ${active.length} pulizie`
+        : ''}">
+      ${day.getDate()}
+      ${active.length ? `<span class="admin-day-count">${completed}/${active.length}</span>` : ''}
+    </button>`;
+  }
+  return `${html}</div></div>`;
+}
+
+/* ============================================================
    IMPOSTAZIONI
 ============================================================ */
 function viewSettings() {
@@ -947,31 +1336,41 @@ function viewSettings() {
     </button>
   </div>`;
 
-  html += `<div class="section-title">Stanze</div>`;
+  html += `<details class="room-section">
+    <summary class="room-section-summary">
+      <span>Stanze</span>
+      <span class="room-chevron" aria-hidden="true">⌄</span>
+    </summary>
+    <div class="room-section-content">`;
 
-  state.settings.rooms.forEach((r, i) => {
+  state.settings.rooms.forEach((room, i) => {
     const detected = state.detectedNames[i];
+    html += `<details class="card room-settings">
+      <summary class="room-summary">
+        <span class="room-title">🏠 ${escapeHtml(room.name)}</span>
+        <span class="room-chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="room-fields">
+        <label class="lbl">Nome stanza ${i + 1}</label>
+        <input class="inp" type="text" value="${escapeAttr(room.name)}"
+          data-room-name="${i}" placeholder="Stanza ${i + 1}">
 
-    html += `<div class="card">
-      <label class="lbl">Nome stanza ${i + 1}</label>
-      <input class="inp" type="text" value="${escapeAttr(r.name)}"
-        data-room-name="${i}" placeholder="Stanza ${i + 1}">
-
-      <label class="lbl">URL iCal Airbnb</label>
-      <input class="inp" type="url" value="${escapeAttr(r.airbnb)}"
-        data-room-airbnb="${i}"
-        placeholder="https://www.airbnb.it/calendar/ical/....ics">
-      <label class="lbl">URL iCal Booking.com</label>
-      <input class="inp" type="url" value="${escapeAttr(r.booking)}"
-        data-room-booking="${i}"
-        placeholder="https://ical.booking.com/v1/export?t=....">`;
+        <label class="lbl">URL iCal Airbnb</label>
+        <input class="inp" type="url" value="${escapeAttr(room.airbnb)}"
+          data-room-airbnb="${i}"
+          placeholder="https://www.airbnb.it/calendar/ical/....ics">
+        <label class="lbl">URL iCal Booking.com</label>
+        <input class="inp" type="url" value="${escapeAttr(room.booking)}"
+          data-room-booking="${i}"
+          placeholder="https://ical.booking.com/v1/export?t=....">`;
 
     if (detected) {
       html += `<div class="detected">📅 Nome calendario rilevato: ${escapeHtml(detected)}</div>`;
     }
 
-    html += `</div>`;
+    html += `</div></details>`;
   });
+  html += `</div></details>`;
 
   html += `<div class="section-title">Opzioni</div>`;
   html += `<div class="card">
@@ -1052,17 +1451,21 @@ function closeModal() { document.getElementById('modal').innerHTML = ''; }
 /* ============================================================
    SALVATAGGIO IMPOSTAZIONI
 ============================================================ */
+function updateRoomSettingsFromForm() {
+  document.querySelectorAll('[data-room-name]').forEach(name => {
+    const i = +name.dataset.roomName;
+    state.settings.rooms[i].name = name.value.trim() || ('Stanza ' + (i + 1));
+  });
+  document.querySelectorAll('[data-room-airbnb]').forEach(input => {
+    state.settings.rooms[+input.dataset.roomAirbnb].airbnb = input.value.trim();
+  });
+  document.querySelectorAll('[data-room-booking]').forEach(input => {
+    state.settings.rooms[+input.dataset.roomBooking].booking = input.value.trim();
+  });
+}
+
 async function saveSettingsFromForm() {
-  document.querySelectorAll('[data-room-name]').forEach(inp => {
-    const i = +inp.dataset.roomName;
-    state.settings.rooms[i].name = inp.value.trim() || ('Stanza ' + (i + 1));
-  });
-  document.querySelectorAll('[data-room-airbnb]').forEach(inp => {
-    state.settings.rooms[+inp.dataset.roomAirbnb].airbnb = inp.value.trim();
-  });
-  document.querySelectorAll('[data-room-booking]').forEach(inp => {
-    state.settings.rooms[+inp.dataset.roomBooking].booking = inp.value.trim();
-  });
+  updateRoomSettingsFromForm();
   const gs = document.querySelector('[data-toggle="showGuestName"]');
   if (gs) state.settings.showGuestName = gs.checked;
 
@@ -1128,12 +1531,79 @@ document.getElementById('main').addEventListener('click', async e => {
   else if (action === 'refresh') {
     refreshAll();
   }
-  else if (action === 'logout') {
-    state.isAdmin = false;
-    localStorage.removeItem('pulizie_admin');
-    state.view = 'home';
+  else if (action === 'adminPeriod') {
+    state.adminPeriod = btn.dataset.period;
     render();
-    toast('Modalità amministratore disattivata');
+  }
+  else if (action === 'adminPrevious' || action === 'adminNext') {
+    const direction = action === 'adminPrevious' ? -1 : 1;
+    const date = fromKey(state.adminDate);
+    if (state.adminPeriod === 'month') {
+      state.adminDate = toKey(new Date(date.getFullYear(), date.getMonth() + direction, 1));
+    } else {
+      state.adminDate = toKey(addDays(date, direction * 7));
+    }
+    render();
+  }
+  else if (action === 'selectAdminDate') {
+    state.adminDate = btn.dataset.date;
+    render();
+  }
+  else if (action === 'toggleCleaning') {
+    const roomId = +btn.dataset.room;
+    const dateKey = btn.dataset.date;
+    try {
+      await saveCleaningRecord(roomId, dateKey, !state.cleaningRecords[cleaningKey(roomId, dateKey)]);
+      state.adminActionError = null;
+      render();
+      toast(state.cleaningRecords[cleaningKey(roomId, dateKey)]
+        ? 'Pulizia confermata e salvata'
+        : 'Conferma corretta');
+    } catch (err) {
+      state.adminActionError = 'Impossibile salvare la conferma: ' + err.message;
+      render();
+    }
+  }
+  else if (action === 'toggleBlock') {
+    const roomId = +btn.dataset.room;
+    const dateKey = btn.dataset.date;
+    try {
+      const blocked = !state.blockOverrides[cleaningKey(roomId, dateKey)];
+      await saveBlockOverride(roomId, dateKey, blocked);
+      state.adminActionError = null;
+      render();
+      toast(blocked ? 'Blocco escluso dalle pulizie' : 'Pulizia ripristinata');
+    } catch (err) {
+      state.adminActionError = 'Impossibile salvare il blocco: ' + err.message;
+      render();
+    }
+  }
+  else if (action === 'logout') {
+    try {
+      await signOut(auth);
+      state.view = 'home';
+      render();
+      toast('Modalità amministratore disattivata');
+    } catch (err) {
+      state.adminActionError = 'Impossibile terminare la sessione: ' + err.message;
+      render();
+    }
+  }
+});
+
+document.getElementById('main').addEventListener('input', e => {
+  if (!e.target.matches('[data-room-name]')) return;
+  const title = e.target.closest('.room-settings').querySelector('.room-title');
+  title.textContent = '🏠 ' + (e.target.value.trim() || e.target.placeholder);
+});
+
+document.getElementById('main').addEventListener('change', e => {
+  if (e.target.matches('[data-admin-date]') && e.target.value) {
+    state.adminDate = e.target.value;
+    render();
+  } else if (e.target.matches('[data-admin-month]') && e.target.value) {
+    state.adminDate = `${e.target.value}-01`;
+    render();
   }
 });
 
@@ -1148,7 +1618,7 @@ document.getElementById('modal').addEventListener('click', e => {
 });
 
 document.getElementById('modal').addEventListener('submit', async e => {
-  const form = e.target.closest('[data-pin-form]');
+  const form = e.target.closest('[data-admin-login]');
   if (!form) return;
   e.preventDefault();
 
@@ -1157,14 +1627,28 @@ document.getElementById('modal').addEventListener('submit', async e => {
   submit.disabled = true;
   error.textContent = '';
   error.hidden = false;
-  if (form.elements.password.value === PIN_ADMIN) {
-    state.isAdmin = true;
-    localStorage.setItem('pulizie_admin', '1');
+  try {
+    const credential = await signInWithEmailAndPassword(
+      auth,
+      form.elements.email.value.trim(),
+      form.elements.password.value
+    );
+    if (credential.user.email !== ADMIN_EMAIL) {
+      await signOut(auth);
+      throw new Error('Questo account non è autorizzato come amministratore.');
+    }
+    if (!credential.user.emailVerified) {
+      await signOut(auth);
+      throw new Error('Verifica prima l’indirizzo email dell’account amministratore.');
+    }
+    state.view = 'admin';
     closeModal();
-    render();
-    toast('Modalità amministratore attiva ✓');
-  } else {
-    error.textContent = 'Password errata.';
+    toast('Accesso amministratore attivo');
+  } catch (err) {
+    error.textContent = err.code === 'auth/invalid-credential' ||
+      err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'
+      ? 'Email o password non corretti.'
+      : err.message;
     submit.disabled = false;
   }
 });
@@ -1173,27 +1657,58 @@ document.getElementById('refreshBtn').addEventListener('click', () => {
   if (!state.fetching) refreshAll();
 });
 
-document.getElementById('lockBtn').addEventListener('click', () => {
+document.getElementById('lockBtn').addEventListener('click', async () => {
   if (state.isAdmin) {
-    state.isAdmin = false;
-    localStorage.removeItem('pulizie_admin');
-    if (state.view === 'settings') state.view = 'home';
-    render();
-    toast('Modalità amministratore disattivata');
+    try {
+      await signOut(auth);
+      state.view = 'home';
+      render();
+      toast('Modalità amministratore disattivata');
+    } catch (err) {
+      state.adminActionError = 'Impossibile terminare la sessione: ' + err.message;
+      render();
+    }
   } else {
     document.getElementById('modal').innerHTML = `
       <div class="modal-bg" data-modal-bg>
-        <form class="modal" data-pin-form>
+        <form class="modal" data-admin-login>
           <div class="modal-title">Accesso amministratore</div>
+          <label class="lbl" for="adminEmail">Email</label>
+          <input class="inp" id="adminEmail" name="email" type="email"
+            autocomplete="username" required>
           <label class="lbl" for="adminPassword">Password</label>
           <input class="inp" id="adminPassword" name="password" type="password"
-            inputmode="numeric" autocomplete="current-password" required>
+            autocomplete="current-password" required>
           <div class="error-box" data-auth-error hidden></div>
           <button class="btn btn-primary" type="submit">Sblocca</button>
           <button class="btn btn-close" type="button" data-action="closeModal">Annulla</button>
+          <div class="admin-login-note">Accesso disponibile solo all’account amministratore verificato.</div>
         </form>
       </div>`;
   }
+});
+
+onAuthStateChanged(auth, async user => {
+  const wasAdmin = state.isAdmin;
+  state.isAdmin = Boolean(
+    user && user.email === ADMIN_EMAIL && user.emailVerified
+  );
+  if (state.isAdmin) {
+    if (!wasAdmin && state.view === 'home') state.view = 'admin';
+    try {
+      await loadAdminRecords();
+    } catch (err) {
+      state.adminError = err.message;
+    }
+    try {
+      await loadBlockOverrides();
+    } catch (err) {
+      state.blockError = 'Impossibile caricare i blocchi salvati su Firebase: ' + err.message;
+    }
+  } else {
+    state.cleaningRecords = {};
+  }
+  render();
 });
 
 /* ============================================================
@@ -1206,6 +1721,11 @@ render();
     await loadCloudSettings();
   } catch (err) {
     state.cloudError = 'Impossibile caricare le impostazioni da Firebase: ' + err.message;
+  }
+  try {
+    await loadBlockOverrides();
+  } catch (err) {
+    state.blockError = 'Impossibile caricare i blocchi salvati su Firebase: ' + err.message;
   }
   render();
   refreshAll();

@@ -260,6 +260,7 @@ import {
 import {
   getAuth,
   onAuthStateChanged,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
@@ -1638,17 +1639,27 @@ document.getElementById('modal').addEventListener('submit', async e => {
       throw new Error('Questo account non è autorizzato come amministratore.');
     }
     if (!credential.user.emailVerified) {
+      await sendEmailVerification(credential.user);
       await signOut(auth);
-      throw new Error('Verifica prima l’indirizzo email dell’account amministratore.');
+      error.textContent = 'Account non verificato: ti abbiamo inviato un link di verifica via email. Aprilo (controlla anche la cartella Spam), poi torna qui e accedi di nuovo.';
+      submit.disabled = false;
+      return;
     }
     state.view = 'admin';
     closeModal();
     toast('Accesso amministratore attivo');
   } catch (err) {
+    const unverifiedUser = auth.currentUser &&
+      auth.currentUser.email === ADMIN_EMAIL && !auth.currentUser.emailVerified;
+    if (unverifiedUser) {
+      await signOut(auth);
+    }
     error.textContent = err.code === 'auth/invalid-credential' ||
       err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'
       ? 'Email o password non corretti.'
-      : err.message;
+      : err.code === 'auth/too-many-requests'
+        ? 'Troppi tentativi. Attendi qualche minuto e riprova.'
+        : `Accesso non completato: ${err.message}`;
     submit.disabled = false;
   }
 });

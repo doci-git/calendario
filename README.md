@@ -2,7 +2,7 @@
 
 Web app statica per gestire le pulizie delle camere usando i calendari iCal Airbnb e
 Booking. Lo staff continua a usare le schermate Pulizie e Calendario; l’area Admin,
-disponibile dopo l’accesso, aggiunge riepiloghi e conferme persistenti.
+disponibile dopo l’accesso, mostra calendario e riepiloghi.
 
 ## Area Admin e dati
 
@@ -10,10 +10,9 @@ disponibile dopo l’accesso, aggiunge riepiloghi e conferme persistenti.
   `docimusa@gmail.com`; il provider Email/Password deve essere attivo e l’indirizzo
   deve essere verificato.
 - Il calendario e il riepilogo settimanale vanno da lunedì a domenica inclusi. Il costo
-  settimanale è pulizie previste × 12 €. Il riepilogo mensile calcola il costo solo
-  dalle pulizie confermate come effettuate.
-- Le conferme sono salvate in Cloud Firestore e restano disponibili anche se una
-  prenotazione scompare dal feed. Nell’area Admin si può correggere una conferma.
+  settimanale è pulizie previste × 12 €. Le pulizie previste con data precedente a
+  oggi sono considerate effettuate automaticamente; il riepilogo mensile calcola il
+  costo staff su queste pulizie passate. Non è richiesta una conferma manuale.
 - Le pulizie previste derivano dai check-out. Una camera produce al massimo una
   pulizia per data, anche con check-in nello stesso giorno o eventi duplicati nei
   due calendari. I blocchi riconoscibili dal testo iCal sono esclusi; un evento
@@ -67,5 +66,4 @@ all’account amministratore.
    dal repository per Pages. Se Pages è già configurato, il push pubblica
    automaticamente la nuova versione.
 4. Apri la URL GitHub Pages e accedi all’area Admin. Usa **Aggiorna** per controllare
-   la sincronizzazione Airbnb/Booking; verifica il calendario e i riepiloghi senza
-   confermare pulizie di prova.
+   la sincronizzazione Airbnb/Booking e verifica il calendario e i riepiloghi.

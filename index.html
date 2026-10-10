@@ -156,7 +156,6 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .admin-month-input{width:100%;max-width:190px;margin:0 auto}
 .admin-day-title{font-size:14px;font-weight:800;color:var(--text);margin:16px 0 8px}
 .admin-note{font-size:12px;color:var(--muted);line-height:1.5;margin:8px 2px}
-.admin-cleaning-actions .btn-success{background:#dcfce7;color:#166534}
 .admin-cleaning-actions .btn-block{background:#e2e8f0;color:#334155}
 .card-title{font-size:15px;font-weight:800;margin-bottom:4px}
 .card-sub{font-size:13px;color:var(--muted);margin-bottom:10px}
@@ -250,7 +249,6 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/fireba
 import {
   doc,
   collection,
-  deleteDoc,
   getDoc,
   getDocs,
   getFirestore,
@@ -276,7 +274,6 @@ const firebaseApp = initializeApp({
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 const settingsRef = doc(db, 'apps', 'pulizie');
-const cleaningRecordsRef = collection(db, 'apps', 'pulizieAdmin', 'cleanings');
 const blockOverridesRef = collection(db, 'apps', 'pulizieAdmin', 'blocked');
 
 /* ============================================================
@@ -321,7 +318,6 @@ const state = {
   settings: null,
   events: [],
   detectedNames: {},
-  cleaningRecords: {},
   blockOverrides: {},
   adminDate: toKey(new Date()),
   adminPeriod: 'week',
@@ -332,7 +328,6 @@ const state = {
   errorMsg: null,
   lastErrorAt: null,
   cloudError: null,
-  adminError: null,
   adminActionError: null,
   blockError: null
 };
@@ -440,36 +435,6 @@ async function loadBlockOverrides() {
   state.blockOverrides = overrides;
   localStorage.setItem('pulizie_blocked', JSON.stringify(overrides));
   state.blockError = null;
-}
-async function loadAdminRecords() {
-  const snapshot = await getDocs(cleaningRecordsRef);
-  const records = {};
-  snapshot.forEach(item => {
-    const data = item.data();
-    if (Number.isInteger(data.roomId) && typeof data.date === 'string' &&
-        data.status === 'done') {
-      records[cleaningKey(data.roomId, data.date)] = data;
-    }
-  });
-  state.cleaningRecords = records;
-  state.adminError = null;
-  state.adminActionError = null;
-}
-async function saveCleaningRecord(roomId, dateKey, done) {
-  const id = cleaningKey(roomId, dateKey);
-  if (done) {
-    await setDoc(doc(db, 'apps', 'pulizieAdmin', 'cleanings', id), {
-      roomId,
-      date: dateKey,
-      status: 'done',
-      updatedAt: serverTimestamp(),
-      updatedBy: ADMIN_EMAIL
-    });
-    state.cleaningRecords[id] = { roomId, date: dateKey, status: 'done' };
-  } else {
-    await deleteDoc(doc(db, 'apps', 'pulizieAdmin', 'cleanings', id));
-    delete state.cleaningRecords[id];
-  }
 }
 async function saveBlockOverride(roomId, dateKey, blocked) {
   const id = cleaningKey(roomId, dateKey);
@@ -1102,39 +1067,27 @@ function viewCalendar() {
    AREA ADMIN
 ============================================================ */
 function getAdminEntriesForDate(dateKey) {
-  const entries = new Map();
-  getCleaningsForDate(dateKey).forEach(cleaning => {
-    const id = cleaningKey(cleaning.roomId, dateKey);
-    entries.set(cleaning.roomId, {
+  const completed = dateKey < toKey(new Date());
+  const entries = getCleaningsForDate(dateKey).map(cleaning => ({
       ...cleaning,
-      completed: Boolean(state.cleaningRecords[id]),
+      completed,
       blocked: false
-    });
-  });
-
-  Object.values(state.cleaningRecords).forEach(record => {
-    if (record.date !== dateKey || entries.has(record.roomId)) return;
-    entries.set(record.roomId, {
-      roomId: record.roomId,
-      completed: true,
-      blocked: Boolean(state.blockOverrides[cleaningKey(record.roomId, dateKey)])
-    });
-  });
+    }));
 
   Object.values(state.blockOverrides).forEach(override => {
-    if (override.date !== dateKey || entries.has(override.roomId)) return;
+    if (override.date !== dateKey || entries.some(entry => entry.roomId === override.roomId)) return;
     const hasCheckout = state.events.some(
       event => event.roomId === override.roomId && event.end === dateKey
     );
     if (hasCheckout) {
-      entries.set(override.roomId, {
+      entries.push({
         roomId: override.roomId,
         completed: false,
         blocked: true
       });
     }
   });
-  return Array.from(entries.values()).sort((a, b) => a.roomId - b.roomId);
+  return entries.sort((a, b) => a.roomId - b.roomId);
 }
 
 function getAdminSummary(start, end) {
@@ -1202,21 +1155,12 @@ function renderAdminCleaning(dateKey, entry) {
   else if (entry.blocked) classes.push('blocked');
 
   let actionButtons = '';
-  if (entry.completed) {
-    actionButtons += `<button class="btn btn-outline" data-action="toggleCleaning"
-      data-room="${entry.roomId}" data-date="${dateKey}">Correggi stato</button>`;
-  } else if (entry.blocked) {
+  if (entry.blocked) {
     actionButtons += `<button class="btn btn-block" data-action="toggleBlock"
       data-room="${entry.roomId}" data-date="${dateKey}">Ripristina pulizia</button>`;
   } else {
-    actionButtons += `<button class="btn btn-success" data-action="toggleCleaning"
-      data-room="${entry.roomId}" data-date="${dateKey}">Segna effettuata</button>
-      <button class="btn btn-block" data-action="toggleBlock"
-        data-room="${entry.roomId}" data-date="${dateKey}">Segna blocco</button>`;
-  }
-  if (entry.completed && entry.blocked) {
     actionButtons += `<button class="btn btn-block" data-action="toggleBlock"
-      data-room="${entry.roomId}" data-date="${dateKey}">Ripristina pulizia</button>`;
+        data-room="${entry.roomId}" data-date="${dateKey}">Segna blocco</button>`;
   }
 
   const status = entry.completed ? '✅ Effettuata' :
@@ -1238,10 +1182,6 @@ function renderAdminDay(dateKey) {
 
 function viewAdmin() {
   if (!state.isAdmin) return '<div class="empty">🔒 Accesso riservato all’amministratore.</div>';
-  if (state.adminError) {
-    return `<div class="view-title">📋 Area Admin</div>
-      <div class="error-box">Impossibile caricare i dati Admin: ${escapeHtml(state.adminError)}</div>`;
-  }
 
   const date = fromKey(state.adminDate);
   const monthly = state.adminPeriod === 'month';
@@ -1280,7 +1220,7 @@ function viewAdmin() {
     }
     html += '</div>';
   }
-  html += `<div class="admin-note">Le pulizie previste derivano dai check-out iCal. Il costo mensile conteggia solo le pulizie segnate come effettuate. Puoi correggere una conferma o escludere un blocco calendario.</div>`;
+  html += `<div class="admin-note">Le pulizie previste derivano dai check-out iCal. Quelle dei giorni passati sono conteggiate come effettuate; quelle di oggi e future restano da fare. Puoi escludere un blocco calendario.</div>`;
   return html;
 }
 
@@ -1552,21 +1492,6 @@ document.getElementById('main').addEventListener('click', async e => {
     state.adminDate = btn.dataset.date;
     render();
   }
-  else if (action === 'toggleCleaning') {
-    const roomId = +btn.dataset.room;
-    const dateKey = btn.dataset.date;
-    try {
-      await saveCleaningRecord(roomId, dateKey, !state.cleaningRecords[cleaningKey(roomId, dateKey)]);
-      state.adminActionError = null;
-      render();
-      toast(state.cleaningRecords[cleaningKey(roomId, dateKey)]
-        ? 'Pulizia confermata e salvata'
-        : 'Conferma corretta');
-    } catch (err) {
-      state.adminActionError = 'Impossibile salvare la conferma: ' + err.message;
-      render();
-    }
-  }
   else if (action === 'toggleBlock') {
     const roomId = +btn.dataset.room;
     const dateKey = btn.dataset.date;
@@ -1709,17 +1634,12 @@ onAuthStateChanged(auth, async user => {
   if (state.isAdmin) {
     if (!wasAdmin && state.view === 'home') state.view = 'admin';
     try {
-      await loadAdminRecords();
-    } catch (err) {
-      state.adminError = err.message;
-    }
-    try {
       await loadBlockOverrides();
     } catch (err) {
       state.blockError = 'Impossibile caricare i blocchi salvati su Firebase: ' + err.message;
     }
   } else {
-    state.cleaningRecords = {};
+    state.adminActionError = null;
   }
   render();
 });

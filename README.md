@@ -1,5 +1,7 @@
 # MusArt — gestione pulizie
 
+https://doci-git.github.io/calendario/
+
 Web app statica per gestire le pulizie delle camere usando i calendari iCal Airbnb e
 Booking. Lo staff continua a usare le schermate Pulizie e Calendario; l’area Admin,
 disponibile dopo l’accesso, mostra calendario e riepiloghi.

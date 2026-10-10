@@ -587,6 +587,8 @@ function extractDate(val) {
   return `${m[1]}-${m[2]}-${m[3]}`;
 }
 function isBlockedEvent(event) {
+  if (event.source === 'Booking') return false;
+
   const summary = String(event.summary || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')

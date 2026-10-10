@@ -19,6 +19,10 @@ disponibile dopo l’accesso, aggiunge riepiloghi e conferme persistenti.
   due calendari. I blocchi riconoscibili dal testo iCal sono esclusi; un evento
   ambiguo può essere escluso dall’area Admin con **Segna blocco**. L’esclusione è
   condivisa con l’area Staff e resta salvata in Firestore.
+- Il feed Booking può usare il testo generico “Not available” anche per un
+  check-in valido. Per non perdere pulizie con cambio ospite nello stesso giorno,
+  gli eventi Booking sono trattati come prenotazioni; eventuali blocchi Booking
+  ambigui vanno esclusi dall’Admin.
 
 Le impostazioni iCal restano nel documento `apps/pulizie`, leggibile dall’app per
 consentire allo Staff la sincronizzazione. Come ogni applicazione statica che legge

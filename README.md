@@ -9,7 +9,7 @@ disponibile dopo l’accesso, aggiunge riepiloghi e conferme persistenti.
 - L’accesso usa Firebase Authentication con l’account amministratore
   `docimusa@gmail.com`; il provider Email/Password deve essere attivo e l’indirizzo
   deve essere verificato.
-- Il calendario settimanale va da lunedì a lunedì (estremo finale escluso). Il costo
+- Il calendario e il riepilogo settimanale vanno da lunedì a domenica inclusi. Il costo
   settimanale è pulizie previste × 12 €. Il riepilogo mensile calcola il costo solo
   dalle pulizie confermate come effettuate.
 - Le conferme sono salvate in Cloud Firestore e restano disponibili anche se una

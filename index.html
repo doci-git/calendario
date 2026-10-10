@@ -1188,7 +1188,7 @@ function adminControls(date, monthly) {
         : `<input class="inp admin-period-input" type="date" value="${toKey(date)}" data-admin-date>`}
       <div class="admin-note">${monthly
         ? `${MESI[date.getMonth()]} ${date.getFullYear()}`
-        : `Settimana ${dateRangeLabel(mondayOfWeek(date), addDays(mondayOfWeek(date), 7))}`}</div>
+        : `Settimana ${dateRangeLabel(mondayOfWeek(date), addDays(mondayOfWeek(date), 6))}`}</div>
     </div>
     <button class="btn btn-outline" data-action="adminNext" aria-label="Periodo successivo">›</button>
   </div>`;

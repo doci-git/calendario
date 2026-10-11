@@ -3,8 +3,9 @@
 https://doci-git.github.io/calendario/
 
 Web app statica per gestire le pulizie delle camere usando i calendari iCal Airbnb e
-Booking. Lo staff continua a usare le schermate Pulizie e Calendario; l’area Admin,
-disponibile dopo l’accesso, mostra calendario e riepiloghi.
+Booking. Lo staff continua a usare le schermate Pulizie e Calendario e può inviare
+segnalazioni di manutenzione; l’area Admin organizza calendario, riepiloghi e
+manutenzioni in tre schede.
 
 ## Area Admin e dati
 
@@ -21,6 +22,20 @@ disponibile dopo l’accesso, mostra calendario e riepiloghi.
   costo staff su queste pulizie passate. Non è richiesta una conferma manuale. Nella
   vista settimanale sono mostrati solo i giorni con pulizie; si cambia settimana con
   le frecce.
+- L’Admin archivia le pulizie per data in Firestore dopo la sincronizzazione dei
+  calendari. Il riepilogo dei mesi passati usa questi dati salvati, anche quando gli
+  eventi non sono più presenti nei feed iCal. L’archivio inizia a raccogliere dati
+  dopo la pubblicazione di questa funzione e il primo accesso/sincronizzazione Admin;
+  i mesi precedenti senza dati archiviati mostrano ancora quanto disponibile dai feed.
+- La scheda **Manutenzioni** mostra le segnalazioni aperte, risolte o tutte. L’Admin
+  può aprirle, vedere le foto, risolverle e riaprirle; i report risolti rimangono nello
+  storico. Il simbolo 🔧 nel calendario apre la relativa segnalazione.
+- Sotto ogni pulizia lo Staff può segnalare un problema, scegliere camera, categoria
+  e priorità e allegare una foto facoltativa. Le immagini vengono ridimensionate e
+  compresse nel browser e salvate in una raccolta Firestore separata dai dati della
+  segnalazione; l’app non usa Firebase Storage per le foto. Per rispettare il limite
+  di Firestore, ogni foto è ridotta a massimo 320 KB e caricata soltanto quando
+  l’amministratore apre la segnalazione.
 - Le pulizie previste derivano dai check-out. Una camera produce al massimo una
   pulizia per data, anche con check-in nello stesso giorno o eventi duplicati nei
   due calendari. I blocchi riconoscibili dal testo iCal sono esclusi; un evento
@@ -35,19 +50,23 @@ Le impostazioni iCal restano nel documento `apps/pulizie`, leggibile dall’app 
 consentire allo Staff la sincronizzazione. Come ogni applicazione statica che legge
 iCal dal browser, i relativi URL non sono segreti rispetto a chi può usare l’app.
 La password condivisa iniziale non sostituisce le regole di sicurezza Firebase.
-Le conferme e i costi non sono esposti allo Staff: le regole Firestore li riservano
-all’account amministratore.
+Le segnalazioni sono scrivibili da utenti Firebase anonimi autenticati, mentre
+lettura, risoluzione e riapertura sono riservate all’Admin. L’autenticazione anonima
+non verifica che l’utente sia davvero un dipendente: chiunque apra l’app può inviare
+una segnalazione, ma non può leggerla o modificarne lo stato. Per limitare l’invio
+esclusivamente ai dipendenti servirebbero account individuali o un’autorizzazione
+attendibile lato server.
 
 ## Configurazione Firebase (necessaria prima della pubblicazione)
 
 1. In Firebase Console, apri il progetto esistente `calendario-690a0` (non crearne
    uno nuovo: l’app è già collegata a questo progetto).
-2. In **Authentication → Sign-in method**, attiva **Email/Password**. Crea l’utente
-   `docimusa@gmail.com` e verifica l’indirizzo email. In **Authentication →
-   Settings → Authorized domains**, controlla che `doci-git.github.io` sia
-   autorizzato.
-3. Se Firestore non è ancora stato creato, crealo dalla Firebase Console. Nella
-   cartella del progetto, accedi a Firebase CLI e pubblica le regole:
+2. In **Authentication → Sign-in method**, attiva **Email/Password** e **Anonymous**.
+   Crea l’utente `docimusa@gmail.com` e verifica l’indirizzo email. In
+   **Authentication → Settings → Authorized domains**, controlla che
+   `doci-git.github.io` sia autorizzato.
+3. Verifica che Firestore sia attivo. Nella cartella del progetto, accedi a Firebase
+   CLI e pubblica le regole:
 
    ```powershell
    npm install -g firebase-tools
@@ -57,12 +76,14 @@ all’account amministratore.
 
    Se Firebase CLI è già installata, non occorre reinstallarla.
 
-   Il file `firestore.rules` permette la lettura pubblica delle impostazioni
-   necessarie allo Staff, ma consente di modificarle solo all’account admin.
-   Conferme e dati amministrativi sono leggibili e modificabili solo dall’admin;
-   gli override dei blocchi sono leggibili dallo Staff e scrivibili solo dall’admin.
-   Non condividere l’app prima di aver pubblicato queste regole: le vecchie regole
-   permissive potrebbero lasciare i dati accessibili.
+   Il file `firestore.rules` permette la lettura delle impostazioni necessarie allo
+   Staff, ma consente di modificarle solo all’account Admin. I report possono essere
+   creati da utenti anonimi autenticati; solo l’Admin può leggerli o cambiarne lo
+   stato. Le foto sono salvate in una raccolta Firestore dedicata: lo Staff può
+   crearle e rimuovere un allegato rimasto orfano in caso di errore, mentre solo
+   l’Admin può leggerle. Anche lo storico pulizie è leggibile e modificabile solo
+   dall’Admin. Non condividere l’app prima di aver pubblicato le regole: le vecchie
+   regole permissive potrebbero lasciare i dati accessibili.
 4. In Firestore, verifica che esista il documento `apps/pulizie` con i link iCal.
    Se non esiste, accedi come admin, configura le camere in **Impostazioni** e salva.
 

@@ -8,6 +8,64 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
+    function isAnonymousStaff() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function validMaintenanceReport(reportId) {
+      return request.resource.data.keys().hasAll([
+          'roomId', 'category', 'description', 'priority', 'status',
+          'createdAt', 'resolvedAt', 'photoAvailable', 'reportedBy'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'roomId', 'category', 'description', 'priority', 'status',
+          'createdAt', 'resolvedAt', 'photoAvailable', 'reportedBy'
+        ])
+        && request.resource.data.roomId is int
+        && request.resource.data.roomId >= 0
+        && request.resource.data.roomId < 4
+        && request.resource.data.category in [
+          'bathroom', 'electrical', 'climate', 'furniture', 'cleaning', 'other'
+        ]
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1000
+        && request.resource.data.priority in ['normal', 'urgent']
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.resolvedAt == null
+        && request.resource.data.reportedBy == request.auth.uid
+        && request.resource.data.photoAvailable is bool
+        && (
+          !request.resource.data.photoAvailable
+          || (
+            exists(/databases/$(database)/documents/apps/pulizieAdmin/maintenancePhotos/$(reportId))
+            && get(/databases/$(database)/documents/apps/pulizieAdmin/maintenancePhotos/$(reportId)).data.reportedBy
+              == request.auth.uid
+          )
+        );
+    }
+
+    function validMaintenancePhoto() {
+      return request.resource.data.keys().hasAll(['photoData', 'reportedBy', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['photoData', 'reportedBy', 'createdAt'])
+        && request.resource.data.photoData is string
+        && request.resource.data.photoData.size() <= 500000
+        && request.resource.data.photoData.matches('^data:image/jpeg;base64,[A-Za-z0-9+/]+=*$')
+        && request.resource.data.reportedBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+    }
+
+    function validMaintenanceStatusUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'resolvedAt'])
+        && request.resource.data.status in ['open', 'resolved']
+        && (
+          request.resource.data.resolvedAt == null
+          || request.resource.data.resolvedAt == request.time
+        );
+    }
+
     match /apps/pulizie {
       allow read: if true;
       allow write: if isAdmin();
@@ -20,6 +78,27 @@ service cloud.firestore {
     match /apps/pulizieAdmin/blocked/{blockId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /apps/pulizieAdmin/maintenanceReports/{reportId} {
+      allow create: if (isAnonymousStaff() || isAdmin())
+        && validMaintenanceReport(reportId);
+      allow read: if isAdmin();
+      allow update: if isAdmin() && validMaintenanceStatusUpdate();
+      allow delete: if false;
+    }
+
+    match /apps/pulizieAdmin/maintenancePhotos/{reportId} {
+      allow create: if (isAnonymousStaff() || isAdmin())
+        && validMaintenancePhoto();
+      allow read: if isAdmin();
+      allow delete: if isAdmin()
+        || (request.auth != null && resource.data.reportedBy == request.auth.uid);
+      allow update: if false;
+    }
+
+    match /apps/pulizieAdmin/cleaningArchive/{dateId} {
+      allow read, write: if isAdmin();
     }
 
     match /{document=**} {

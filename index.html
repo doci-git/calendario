@@ -169,6 +169,12 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .maintenance-tab-count{display:inline-flex;align-items:center;justify-content:center;
   min-width:19px;height:19px;margin-left:4px;padding:0 5px;border-radius:999px;
   background:#fff;color:var(--danger);font-size:10px;font-weight:900;vertical-align:middle}
+.maintenance-sound-row{display:flex;align-items:center;gap:9px;margin:-5px 1px 12px}
+.maintenance-sound-toggle{width:auto;margin:0;padding:8px 11px;border:1px solid var(--border);
+  border-radius:9px;background:#fff;color:var(--muted);font:inherit;font-size:11px;
+  font-weight:800;cursor:pointer}
+.maintenance-sound-toggle.enabled{background:#dcfce7;color:#166534;border-color:#86efac}
+.maintenance-sound-note{font-size:10.5px;color:var(--muted);line-height:1.35}
 .maintenance-filters{display:flex;gap:7px;margin:8px 0 14px}
 .maintenance-filter{flex:1;border:1px solid var(--border);border-radius:10px;background:#fff;
   color:var(--muted);padding:9px 5px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
@@ -464,6 +470,8 @@ const state = {
   adminArchiveError: null,
   adminArchiveRequest: null,
   maintenanceFilter: 'open',
+  adminSoundEnabled: false,
+  adminSoundError: null,
   expandedMaintenanceIds: new Set(),
   maintenanceReports: [],
   maintenancePhotoUrls: {},
@@ -605,11 +613,20 @@ async function saveBlockOverride(roomId, dateKey, blocked) {
   localStorage.setItem('pulizie_blocked', JSON.stringify(state.blockOverrides));
 }
 let unsubscribeMaintenanceReports = null;
+let maintenanceInitialSnapshotReceived = false;
+let maintenanceAudioContext = null;
 
 function subscribeToMaintenanceReports() {
   if (unsubscribeMaintenanceReports) unsubscribeMaintenanceReports();
+  maintenanceInitialSnapshotReceived = false;
   state.maintenanceError = null;
   unsubscribeMaintenanceReports = onSnapshot(maintenanceReportsRef, snapshot => {
+    const newlyOpened = maintenanceInitialSnapshotReceived
+      ? snapshot.docChanges().filter(change =>
+        change.type === 'added' && change.doc.data().status === 'open'
+      )
+      : [];
+    maintenanceInitialSnapshotReceived = true;
     state.maintenanceReports = snapshot.docs.map(item => ({
       id: item.id,
       ...item.data()
@@ -619,11 +636,61 @@ function subscribeToMaintenanceReports() {
       return bTime - aTime;
     });
     state.maintenanceError = null;
+    if (newlyOpened.length && state.isAdmin && state.adminSoundEnabled) {
+      playMaintenanceAlert();
+    }
     render();
   }, error => {
     state.maintenanceError = 'Impossibile aggiornare le segnalazioni: ' + error.message;
     render();
   });
+}
+
+function playMaintenanceAlert() {
+  try {
+    if (!maintenanceAudioContext || maintenanceAudioContext.state !== 'running') {
+      throw new Error('Il browser ha sospeso l’audio. Tocca di nuovo “Attiva suono”.');
+    }
+    const start = maintenanceAudioContext.currentTime;
+    [0, 0.28, 0.62, 0.9, 1.24, 1.52].forEach((offset, index) => {
+      const oscillator = maintenanceAudioContext.createOscillator();
+      const gain = maintenanceAudioContext.createGain();
+      const toneStart = start + offset;
+      oscillator.type = 'sine';
+      oscillator.frequency.value = index % 2 === 0 ? 880 : 660;
+      gain.gain.setValueAtTime(0, toneStart);
+      gain.gain.linearRampToValueAtTime(0.16, toneStart + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.001, toneStart + 0.24);
+      oscillator.connect(gain);
+      gain.connect(maintenanceAudioContext.destination);
+      oscillator.start(toneStart);
+      oscillator.stop(toneStart + 0.25);
+    });
+    state.adminSoundError = null;
+  } catch (error) {
+    state.adminSoundEnabled = false;
+    state.adminSoundError = error.message;
+  }
+}
+
+async function enableAdminMaintenanceSound() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      throw new Error('Questo browser non supporta gli avvisi audio.');
+    }
+    if (!maintenanceAudioContext || maintenanceAudioContext.state === 'closed') {
+      maintenanceAudioContext = new AudioContextClass();
+    }
+    await maintenanceAudioContext.resume();
+    state.adminSoundEnabled = true;
+    state.adminSoundError = null;
+    playMaintenanceAlert();
+  } catch (error) {
+    state.adminSoundEnabled = false;
+    state.adminSoundError = error.message;
+  }
+  render();
 }
 
 async function loadMaintenancePhoto(reportId) {
@@ -1710,6 +1777,15 @@ function viewAdmin() {
         ${label}${count ? `<span class="maintenance-tab-count" aria-hidden="true">${count}</span>` : ''}
       </button>`).join('')}
     </div>
+    <div class="maintenance-sound-row">
+      <button class="maintenance-sound-toggle ${state.adminSoundEnabled ? 'enabled' : ''}"
+        data-action="toggleMaintenanceSound" aria-pressed="${state.adminSoundEnabled}">
+        ${state.adminSoundEnabled ? '🔔 Suono attivo' : '🔕 Attiva suono'}
+      </button>
+      <span class="maintenance-sound-note">${state.adminSoundError
+        ? escapeHtml(state.adminSoundError)
+        : 'Avviso solo mentre l’Admin ha l’app aperta.'}</span>
+    </div>
     ${state.adminActionError
       ? `<div class="error-box">${escapeHtml(state.adminActionError)}</div>`
       : ''}`;
@@ -2188,6 +2264,15 @@ document.getElementById('main').addEventListener('click', async e => {
   else if (action === 'adminTab') {
     state.adminTab = btn.dataset.tab;
     render();
+  }
+  else if (action === 'toggleMaintenanceSound') {
+    if (state.adminSoundEnabled) {
+      state.adminSoundEnabled = false;
+      state.adminSoundError = null;
+      render();
+    } else {
+      await enableAdminMaintenanceSound();
+    }
   }
   else if (action === 'maintenanceFilter') {
     state.maintenanceFilter = btn.dataset.filter;

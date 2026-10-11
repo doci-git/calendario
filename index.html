@@ -79,6 +79,15 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
   text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;padding-left:4px}
 .clean-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;
   box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid var(--primary);transition:.15s}
+.staff-cleaning-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+  gap:8px;background:#fff;border-radius:11px;padding:9px 10px;margin-bottom:7px;
+  border-left:4px solid var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.staff-cleaning-content{min-width:0}
+.staff-cleaning-row .cc-room{font-size:13px}
+.staff-cleaning-row .cc-info{font-size:10.5px;margin-top:3px}
+.staff-cleaning-row .cc-guest{font-size:10.5px;margin-top:3px}
+.staff-cleaning-row .cc-both{margin-top:4px;padding:3px 6px;font-size:9px}
+.staff-cleaning-row .report-issue-btn{margin:0;padding:8px 10px;font-size:11px;white-space:nowrap}
 .clean-card.both{border-left-color:var(--warning);background:var(--warning-bg)}
 .clean-card.both{padding:12px 14px;margin-bottom:8px}
 .clean-card.both .cc-room{font-size:16px}
@@ -159,7 +168,7 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .admin-week-room-name{font-size:13px;font-weight:800}
 .admin-week-room-state{font-size:10.5px;color:var(--muted);font-weight:700}
 .admin-week-room .btn{width:auto;margin:0;padding:8px 10px;font-size:11px;min-height:36px}
-.maintenance-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;
+.maintenance-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;
   background:#e2e8f0;border-radius:13px;padding:4px;margin-bottom:14px}
 .maintenance-tab{border:0;border-radius:10px;background:transparent;color:var(--muted);
   padding:10px 5px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
@@ -169,6 +178,43 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .maintenance-tab-count{display:inline-flex;align-items:center;justify-content:center;
   min-width:19px;height:19px;margin-left:4px;padding:0 5px;border-radius:999px;
   background:#fff;color:var(--danger);font-size:10px;font-weight:900;vertical-align:middle}
+.stock-choice-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.stock-choice{min-height:40px;border:1px solid var(--border);border-radius:9px;background:#fff;
+  color:var(--muted);font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.stock-choice.selected-ok{background:#dcfce7;border-color:#86efac;color:#166534}
+.stock-choice.selected-low{background:#ffedd5;border-color:#fdba74;color:#9a3412}
+.stock-choice.selected-out{background:#fee2e2;border-color:#fca5a5;color:#b91c1c}
+.stock-report-card,.stock-product-card{background:#fff;border-radius:13px;padding:13px;margin:9px 0;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid var(--border)}
+.stock-product-card{padding:12px;margin:7px 0}
+.stock-report-card.low{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+  gap:6px 8px;border-left-color:#f97316;padding:9px 10px;margin:5px 0;border-radius:11px}
+.stock-report-card.low .stock-report-content{min-width:0}
+.stock-report-card.low .stock-report-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.stock-report-card.low .stock-report-name{font-size:13px}
+.stock-report-card.low .stock-report-state{margin:0;padding:3px 7px}
+.stock-report-card.low .stock-report-meta{font-size:10px;margin-top:4px}
+.stock-report-card.low .stock-report-note{font-size:11px;margin-top:4px}
+.stock-report-card.low .btn{width:auto;min-height:36px;margin:0;padding:8px 10px;font-size:11px}
+.stock-report-card.out{border-left-color:var(--danger)}
+.stock-report-name{font-size:14px;font-weight:800}
+.stock-report-state{display:inline-block;margin-top:5px;padding:4px 8px;border-radius:7px;
+  font-size:10px;font-weight:900}
+.stock-report-state.low{background:#ffedd5;color:#9a3412}
+.stock-report-state.out{background:#fee2e2;color:#b91c1c}
+.stock-report-meta{font-size:11px;color:var(--muted);margin-top:6px}
+.stock-report-note{font-size:12px;margin-top:7px;line-height:1.45;overflow-wrap:anywhere}
+.stock-report-card .btn{margin-top:9px}
+.stock-filter-row{display:flex;gap:7px;margin:10px 0 14px}
+.stock-filter{flex:1;min-height:40px;border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--muted);font:inherit;font-size:12px;font-weight:800}
+.stock-filter.active{background:#dbeafe;border-color:#93c5fd;color:#1e40af}
+.stock-product-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.stock-product-actions{display:flex;gap:6px}
+.stock-product-actions .btn{width:auto;margin:0;padding:8px 10px;font-size:11px}
+.stock-product-inactive{opacity:.65}
+.stock-form-note{min-height:90px}
+.stock-custom-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(112px,.65fr);gap:8px}
 .maintenance-filters{display:flex;gap:7px;margin:8px 0 14px}
 .maintenance-filter{flex:1;border:1px solid var(--border);border-radius:10px;background:#fff;
   color:var(--muted);padding:9px 5px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
@@ -177,8 +223,11 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
   box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid var(--primary);overflow:hidden}
 .maintenance-card.urgent{border-left-color:var(--danger)}
 .maintenance-card.resolved{border-left-color:var(--success)}
+.maintenance-report-row{position:relative;margin:7px 0}
+.maintenance-report-row .maintenance-card{margin:0;border-radius:11px}
 .maintenance-summary{display:flex;align-items:center;gap:10px;padding:12px;
   cursor:pointer;list-style:none}
+.maintenance-report-row .maintenance-summary{padding-right:116px}
 .maintenance-summary::-webkit-details-marker{display:none}
 .maintenance-summary-main{flex:1;min-width:0}
 .maintenance-summary-room{font-size:13px;font-weight:800}
@@ -195,6 +244,9 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
   border-radius:10px;margin:10px auto;cursor:zoom-in}
 .maintenance-actions{display:flex;gap:8px}
 .maintenance-actions .btn{margin-top:8px;padding:11px;font-size:13px}
+.maintenance-row-action{position:absolute;top:9px;right:9px;width:auto;min-height:36px;
+  margin:0;padding:8px 10px;border:0;border-radius:10px;font:inherit;
+  font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
 .maintenance-resolve{background:#dcfce7;color:#166534}
 .maintenance-reopen{background:#e2e8f0;color:#334155}
 .maintenance-indicator{border:0;background:transparent;color:var(--warning);
@@ -262,15 +314,16 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .src-badge.direct{background:#dbeafe;color:#1e40af}
 
 nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
-  display:flex;box-shadow:0 -2px 14px rgba(0,0,0,.09);
+  display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;
+  box-shadow:0 -2px 14px rgba(0,0,0,.09);
   padding-bottom:env(safe-area-inset-bottom)}
-.nav-btn{flex:1;background:none;border:none;padding:8px 4px 10px;display:flex;
+.nav-btn{min-width:0;background:none;border:none;padding:8px 3px 10px;display:flex;
   flex-direction:column;align-items:center;gap:3px;cursor:pointer;
   color:var(--muted);font-family:inherit;transition:.15s}
 .nav-btn.active{color:var(--primary)}
 .nav-btn:active{transform:scale(.94)}
 .nav-icon{font-size:21px;line-height:1}
-.nav-label{font-size:10.5px;font-weight:800;letter-spacing:.2px}
+.nav-label{font-size:10px;font-weight:800;letter-spacing:.1px;white-space:nowrap}
 .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;
   display:flex;align-items:flex-end;justify-content:center;padding:14px;
   animation:fadeIn .15s ease}
@@ -298,7 +351,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;
   .admin-week-room{grid-template-columns:minmax(0,1fr) auto;gap:5px 8px}
   .admin-week-room-state{grid-column:1}
   .admin-week-room .btn{grid-column:2;grid-row:1 / span 2}
-  .maintenance-tab{font-size:11px;padding:9px 3px}
+  .maintenance-tab{font-size:10px;padding:9px 2px}
   .maintenance-summary{gap:7px;padding:10px}
   .maintenance-priority{font-size:9px;padding:4px 5px}
 }
@@ -385,7 +438,8 @@ import {
   setDoc,
   updateDoc,
   where,
-  writeBatch
+  writeBatch,
+  runTransaction
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {
   getAuth,
@@ -409,6 +463,10 @@ const blockOverridesRef = collection(db, 'apps', 'pulizieAdmin', 'blocked');
 const maintenanceReportsRef = collection(db, 'apps', 'pulizieAdmin', 'maintenanceReports');
 const maintenancePhotosRef = collection(db, 'apps', 'pulizieAdmin', 'maintenancePhotos');
 const cleaningArchiveRef = collection(db, 'apps', 'pulizieAdmin', 'cleaningArchive');
+const stockProductsRef = collection(db, 'apps', 'pulizieAdmin', 'stockProducts');
+const stockReportsRef = collection(db, 'apps', 'pulizieAdmin', 'stockReports');
+const stockStatesRef = collection(db, 'apps', 'pulizieAdmin', 'stockStates');
+const stockHistoryRef = collection(db, 'apps', 'pulizieAdmin', 'stockHistory');
 
 /* ============================================================
    COSTANTI
@@ -424,6 +482,17 @@ const GIORNI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerd�
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
               'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const MESI_BREVI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const DEFAULT_STOCK_PRODUCTS = [
+  ['acqua', 'Acqua'],
+  ['capsule-caffe', 'Capsule caffè'],
+  ['carta-igienica', 'Carta igienica'],
+  ['sapone-mani', 'Sapone mani'],
+  ['shampoo-bagnoschiuma', 'Shampoo / bagnoschiuma'],
+  ['detergente-bagno', 'Detergente bagno'],
+  ['detergente-pavimenti', 'Detergente pavimenti'],
+  ['sacchi-spazzatura', 'Sacchi spazzatura'],
+  ['altri-prodotti', 'Altri prodotti']
+];
 
 const DEFAULT_ROOM = {
   name: 'Stanza',
@@ -470,6 +539,17 @@ const state = {
   maintenancePhotoLoading: {},
   maintenancePhotoErrors: {},
   maintenanceError: null,
+  stockProducts: [],
+  stockReports: [],
+  stockHistory: [],
+  stockError: null,
+  stockLoading: false,
+  stockSelections: {},
+  stockNote: '',
+  stockCustomName: '',
+  stockCustomStatus: 'low',
+  stockAdminFilter: 'open',
+  stockProductNameDrafts: {},
   staffAuthError: null,
   authError: null,
   isAdmin: false,
@@ -605,6 +685,288 @@ async function saveBlockOverride(roomId, dateKey, blocked) {
   localStorage.setItem('pulizie_blocked', JSON.stringify(state.blockOverrides));
 }
 let unsubscribeMaintenanceReports = null;
+let unsubscribeStockProducts = null;
+let unsubscribeStockReports = null;
+let unsubscribeStockHistory = null;
+
+function stopStockSubscriptions() {
+  [unsubscribeStockProducts, unsubscribeStockReports, unsubscribeStockHistory]
+    .forEach(unsubscribe => { if (unsubscribe) unsubscribe(); });
+  unsubscribeStockProducts = null;
+  unsubscribeStockReports = null;
+  unsubscribeStockHistory = null;
+}
+
+function subscribeToStaffStockProducts() {
+  stopStockSubscriptions();
+  state.stockError = null;
+  state.stockLoading = true;
+  unsubscribeStockProducts = onSnapshot(
+    query(stockProductsRef, where('active', '==', true)),
+    snapshot => {
+      state.stockProducts = snapshot.docs.map(item => ({
+        id: item.id,
+        ...item.data()
+      })).sort((a, b) => a.name.localeCompare(b.name, 'it'));
+      state.stockLoading = false;
+      render();
+    },
+    error => {
+      state.stockLoading = false;
+      state.stockError = 'Impossibile caricare l’elenco prodotti: ' + error.message;
+      render();
+    }
+  );
+}
+
+function subscribeToAdminStock() {
+  stopStockSubscriptions();
+  state.stockError = null;
+  state.stockLoading = true;
+  unsubscribeStockProducts = onSnapshot(stockProductsRef, snapshot => {
+    state.stockProducts = snapshot.docs.map(item => ({
+      id: item.id,
+      ...item.data()
+    })).sort((a, b) => a.name.localeCompare(b.name, 'it'));
+    state.stockLoading = false;
+    render();
+  }, error => {
+    state.stockLoading = false;
+    state.stockError = 'Impossibile sincronizzare i prodotti: ' + error.message;
+    render();
+  });
+  unsubscribeStockReports = onSnapshot(stockReportsRef, snapshot => {
+    state.stockReports = snapshot.docs.map(item => ({
+      id: item.id,
+      ...item.data()
+    })).sort((a, b) => stockTimestamp(b.updatedAt) - stockTimestamp(a.updatedAt));
+    render();
+  }, error => {
+    state.stockError = 'Impossibile sincronizzare le segnalazioni scorte: ' + error.message;
+    render();
+  });
+  unsubscribeStockHistory = onSnapshot(stockHistoryRef, snapshot => {
+    state.stockHistory = snapshot.docs.map(item => ({
+      id: item.id,
+      ...item.data()
+    })).sort((a, b) => stockTimestamp(b.restockedAt) - stockTimestamp(a.restockedAt));
+    render();
+  }, error => {
+    state.stockError = 'Impossibile caricare lo storico rifornimenti: ' + error.message;
+    render();
+  });
+}
+
+function stockTimestamp(value) {
+  return value && typeof value.toMillis === 'function' ? value.toMillis() : 0;
+}
+
+async function ensureDefaultStockProducts() {
+  const existing = await Promise.all(DEFAULT_STOCK_PRODUCTS.map(([id]) =>
+    getDoc(doc(stockProductsRef, id))
+  ));
+  const batch = writeBatch(db);
+  let added = 0;
+  existing.forEach((snapshot, index) => {
+    if (snapshot.exists()) return;
+    const [id, name] = DEFAULT_STOCK_PRODUCTS[index];
+    batch.set(doc(stockProductsRef, id), {
+      name,
+      active: true,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    added++;
+  });
+  if (added) await batch.commit();
+  await migrateStockStates();
+}
+
+async function migrateStockStates() {
+  const reports = await getDocs(stockReportsRef);
+  await Promise.all(reports.docs.map(reportSnapshot => {
+    const reportRef = doc(stockReportsRef, reportSnapshot.id);
+    const stateRef = doc(stockStatesRef, reportSnapshot.id);
+    return runTransaction(db, async transaction => {
+      const [currentReport, currentState] = await Promise.all([
+        transaction.get(reportRef),
+        transaction.get(stateRef)
+      ]);
+      if (!currentReport.exists() || currentState.exists()) return;
+      const report = currentReport.data();
+      if (report.status !== 'low' && report.status !== 'out') return;
+      transaction.set(stateRef, {
+        productId: report.productId,
+        status: report.status,
+        createdAt: report.createdAt || serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    });
+  }));
+}
+
+function stockProductIdFromName(name) {
+  const slug = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    .slice(0, 80);
+  return `custom-${slug}`;
+}
+
+function normalizeStockProductName(name) {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+async function submitStockReports(form) {
+  if (!auth.currentUser || !auth.currentUser.isAnonymous) {
+    throw new Error('Accesso staff non disponibile. Ricarica la pagina e riprova.');
+  }
+  const selected = state.stockProducts
+    .map(product => ({
+      product,
+      status: state.stockSelections[product.id] || 'ok'
+    }))
+    .filter(item => item.status === 'low' || item.status === 'out');
+  const customName = state.stockCustomName.trim();
+  if (customName) {
+    if (customName.length > 80) throw new Error('Il nome del prodotto aggiuntivo deve contenere al massimo 80 caratteri.');
+    const matchingProduct = state.stockProducts.find(product =>
+      normalizeStockProductName(product.name) === normalizeStockProductName(customName)
+    );
+    selected.push({
+      product: matchingProduct
+        ? { id: matchingProduct.id, name: matchingProduct.name, custom: false }
+        : { id: stockProductIdFromName(customName), name: customName, custom: true },
+      status: state.stockCustomStatus
+    });
+  }
+  if (!selected.length) throw new Error('Seleziona almeno un prodotto da segnalare.');
+
+  const note = state.stockNote.trim();
+  if (note.length > 500) throw new Error('Le note devono contenere al massimo 500 caratteri.');
+  const uniqueSelected = new Map();
+  selected.forEach(item => {
+    const current = uniqueSelected.get(item.product.id);
+    const priority = status => status === 'out' ? 2 : 1;
+    if (!current || priority(item.status) > priority(current.status)) {
+      uniqueSelected.set(item.product.id, item);
+    }
+  });
+  const reports = Array.from(uniqueSelected.values());
+  await runTransaction(db, async transaction => {
+    const stateRefs = reports.map(({ product }) => doc(stockStatesRef, product.id));
+    const stateSnapshots = await Promise.all(stateRefs.map(stateRef => transaction.get(stateRef)));
+    reports.forEach(({ product, status }, index) => {
+      const stateSnapshot = stateSnapshots[index];
+      const currentState = stateSnapshot.exists() ? stateSnapshot.data() : null;
+      const finalStatus = currentState && currentState.status === 'out' && status === 'low'
+        ? 'out'
+        : status;
+      const reportRef = doc(stockReportsRef, product.id);
+      const reportedAt = currentState && currentState.status !== 'ok'
+        ? currentState.createdAt
+        : serverTimestamp();
+      transaction.set(stateRefs[index], {
+        productId: product.id,
+        status: finalStatus,
+        createdAt: reportedAt,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      transaction.set(reportRef, {
+        productId: product.id,
+        productName: product.name,
+        custom: Boolean(product.custom),
+        status: finalStatus,
+        note,
+        createdAt: reportedAt,
+        updatedAt: serverTimestamp(),
+        reportedBy: auth.currentUser.uid
+      }, { merge: true });
+    });
+  });
+  state.stockSelections = {};
+  state.stockNote = '';
+  state.stockCustomName = '';
+  state.stockCustomStatus = 'low';
+  form.reset();
+}
+
+async function markStockRestocked(report) {
+  if (!state.isAdmin) throw new Error('Solo l’amministratore può segnare un prodotto come rifornito.');
+  const reportRef = doc(stockReportsRef, report.id);
+  const stateRef = doc(stockStatesRef, report.id);
+  const historyRef = doc(stockHistoryRef);
+  await runTransaction(db, async transaction => {
+    const [currentSnapshot, stateSnapshot] = await Promise.all([
+      transaction.get(reportRef),
+      transaction.get(stateRef)
+    ]);
+    if (!currentSnapshot.exists()) throw new Error('La segnalazione non esiste più.');
+    const current = currentSnapshot.data();
+    if (current.status === 'restocked') return;
+    if (!stateSnapshot.exists()) {
+      transaction.set(stateRef, {
+        productId: current.productId,
+        status: 'ok',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      transaction.update(stateRef, {
+        status: 'ok',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    }
+    const restockedAt = serverTimestamp();
+    transaction.update(reportRef, {
+      status: 'restocked',
+      restockedAt,
+      restockedBy: auth.currentUser.uid,
+      updatedAt: restockedAt
+    });
+    transaction.set(historyRef, {
+      productId: current.productId,
+      productName: current.productName,
+      previousStatus: current.status,
+      note: current.note || '',
+      reportedAt: current.updatedAt || current.createdAt,
+      restockedAt,
+      restockedBy: auth.currentUser.uid
+    });
+  });
+}
+
+async function saveStockProduct(productId, name) {
+  if (!state.isAdmin) throw new Error('Solo l’amministratore può gestire i prodotti.');
+  const cleanName = name.trim();
+  if (!cleanName || cleanName.length > 80) {
+    throw new Error('Inserisci un nome prodotto da 1 a 80 caratteri.');
+  }
+  const productRef = productId
+    ? doc(stockProductsRef, productId)
+    : doc(stockProductsRef, stockProductIdFromName(cleanName));
+  const knownCustomReport = state.stockReports.find(report =>
+    report.custom && normalizeStockProductName(report.productName) === normalizeStockProductName(cleanName)
+  );
+  const targetRef = !productId && knownCustomReport
+    ? doc(stockProductsRef, knownCustomReport.id)
+    : productRef;
+  await setDoc(targetRef, {
+    name: cleanName,
+    active: true,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+  return targetRef.id;
+}
+
+async function setStockProductActive(productId, active) {
+  if (!state.isAdmin) throw new Error('Solo l’amministratore può gestire i prodotti.');
+  await updateDoc(doc(stockProductsRef, productId), {
+    active,
+    updatedAt: serverTimestamp()
+  });
+}
 
 function subscribeToMaintenanceReports() {
   if (unsubscribeMaintenanceReports) unsubscribeMaintenanceReports();
@@ -1204,6 +1566,7 @@ function render() {
   const main = document.getElementById('main');
   if (state.view === 'home') main.innerHTML = viewHome();
   else if (state.view === 'calendar') main.innerHTML = viewCalendar();
+  else if (state.view === 'stock') main.innerHTML = viewStaffStock();
   else if (state.view === 'admin') main.innerHTML = viewAdmin();
   else if (state.view === 'settings') main.innerHTML = viewSettings();
   if (state.cloudError) {
@@ -1224,6 +1587,8 @@ function renderNav() {
   if (state.isAdmin) {
     items.push({ id:'admin', icon:'📋', label:'Admin' });
     items.push({ id:'settings', icon:'⚙️', label:'Impostazioni' });
+  } else {
+    items.push({ id:'stock', icon:'📦', label:'Scorte' });
   }
 
   document.getElementById('nav').innerHTML = items.map(it => `
@@ -1338,13 +1703,15 @@ function renderCleaningCard(dk, c) {
     : '';
 
   return `
-  <div class="${cls}">
-    <div class="cc-top">
-      <div class="cc-room">🧹 ${escapeHtml(room.name.toUpperCase())}${srcBadge}</div>
+  <div class="${cls} staff-cleaning-row">
+    <div class="staff-cleaning-content">
+      <div class="cc-top">
+        <div class="cc-room">🧹 ${escapeHtml(room.name.toUpperCase())}${srcBadge}</div>
+      </div>
+      <div class="cc-info">Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>
+      ${both ? `<div class="cc-both">⚠️ CHECK-OUT + NUOVO CHECK-IN (${escapeHtml(state.settings.checkinTime)})</div>` : ''}
+      ${guest ? `<div class="cc-guest">👤 ${escapeHtml(guest)}</div>` : ''}
     </div>
-    <div class="cc-info">Check-out: ${escapeHtml(state.settings.checkoutTime)}</div>
-    ${both ? `<div class="cc-both">⚠️ CHECK-OUT + NUOVO CHECK-IN (${escapeHtml(state.settings.checkinTime)})</div>` : ''}
-    ${guest ? `<div class="cc-guest">👤 ${escapeHtml(guest)}</div>` : ''}
     <button class="report-issue-btn" data-action="newMaintenanceReport"
       data-room="${c.roomId}">🔧 Segnala problema</button>
   </div>`;
@@ -1390,6 +1757,57 @@ function viewCalendar() {
 
   html += `<div class="footer-note">Tocca una casella per vedere il dettaglio della giornata.</div>`;
 
+  return html;
+}
+
+function viewStaffStock() {
+  const statusLabels = { ok: 'OK', low: 'Sta finendo', out: 'Finito' };
+  let html = '<div class="view-title">📦 Segnala prodotti</div>';
+  if (state.stockError) {
+    html += `<div class="error-box">${escapeHtml(state.stockError)}</div>`;
+  }
+  if (state.stockLoading && !state.stockProducts.length) {
+    return html + '<div class="empty">Caricamento prodotti…</div>';
+  }
+  if (!state.stockProducts.length) {
+    return html + `<div class="empty">${state.isAdmin
+      ? 'Nessun prodotto attivo. Aggiungi i prodotti dalla scheda Scorte dell’Admin.'
+      : 'Elenco prodotti non ancora disponibile. Riprova tra poco o avvisa l’amministratore.'}</div>`;
+  }
+
+  html += `<form class="card" data-stock-report-form>
+    <div class="card-sub">Seleziona solo i prodotti da acquistare. Non inserire quantità o camere.</div>
+    ${state.stockProducts.map(product => {
+      const selected = state.stockSelections[product.id] || 'ok';
+      return `<div class="stock-product-card">
+        <div class="stock-report-name">${escapeHtml(product.name)}</div>
+        <div class="stock-choice-row">
+          ${['ok', 'low', 'out'].map(status => `<button type="button"
+            class="stock-choice ${selected === status ? `selected-${status}` : ''}"
+            data-action="stockSelect" data-product-id="${escapeAttr(product.id)}"
+            data-stock-status="${status}" aria-pressed="${selected === status}">
+            ${statusLabels[status]}
+          </button>`).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+    <div class="section-title">Prodotto non presente?</div>
+    <div class="stock-custom-fields">
+      <input class="inp" name="stockCustomName" type="text" maxlength="80"
+        placeholder="Nome prodotto (facoltativo)" value="${escapeAttr(state.stockCustomName)}">
+      <select class="inp" name="stockCustomStatus" aria-label="Stato prodotto aggiuntivo">
+        <option value="low" ${state.stockCustomStatus === 'low' ? 'selected' : ''}>Sta finendo</option>
+        <option value="out" ${state.stockCustomStatus === 'out' ? 'selected' : ''}>Finito</option>
+      </select>
+    </div>
+    <label class="lbl" for="stockStaffNote">Note (facoltative)</label>
+    <textarea class="inp stock-form-note" id="stockStaffNote" name="stockNote"
+      maxlength="500" placeholder="Aggiungi una nota per l’amministratore">${escapeHtml(state.stockNote)}</textarea>
+    <div class="maintenance-upload-status" data-stock-feedback hidden></div>
+    <button class="btn btn-primary" type="submit" ${state.stockLoading ? 'disabled' : ''}>
+      ${state.stockLoading ? 'Invio in corso…' : 'Invia segnalazione'}
+    </button>
+  </form>`;
   return html;
 }
 
@@ -1697,16 +2115,20 @@ function viewAdmin() {
   if (!state.isAdmin) return '<div class="empty">🔒 Accesso riservato all’amministratore.</div>';
 
   const openMaintenanceCount = state.maintenanceReports.filter(report => report.status === 'open').length;
+  const openStockCount = state.stockReports.filter(report =>
+    report.status === 'low' || report.status === 'out'
+  ).length;
   const tabs = [
     ['calendar', 'Calendario'],
     ['summary', 'Riepilogo'],
-    ['maintenance', 'Manutenzioni', openMaintenanceCount]
+    ['maintenance', 'Manutenzioni', openMaintenanceCount],
+    ['stock', 'Scorte', openStockCount]
   ];
   let html = `<div class="view-title">📋 Area Admin</div>
     <div class="maintenance-tabs" role="tablist" aria-label="Sezioni amministratore">
       ${tabs.map(([id, label, count]) => `<button class="maintenance-tab ${state.adminTab === id ? 'active' : ''} ${count ? 'has-open' : ''}"
         role="tab" aria-selected="${state.adminTab === id}" data-action="adminTab"
-        data-tab="${id}" ${count ? `aria-label="${label}: ${count} segnalazioni aperte"` : ''}>
+        data-tab="${id}" ${count ? `aria-label="${label}: ${count} elementi aperti"` : ''}>
         ${label}${count ? `<span class="maintenance-tab-count" aria-hidden="true">${count}</span>` : ''}
       </button>`).join('')}
     </div>
@@ -1716,6 +2138,7 @@ function viewAdmin() {
 
   if (state.adminTab === 'maintenance') return html + renderAdminMaintenance();
   if (state.adminTab === 'summary') return html + renderAdminSummary();
+  if (state.adminTab === 'stock') return html + renderAdminStock();
   return html + renderAdminCalendar();
 }
 
@@ -1825,6 +2248,97 @@ function renderAdminMaintenance() {
   return html;
 }
 
+function formatStockDate(value) {
+  if (!value) return 'Data non disponibile';
+  const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Data non disponibile' : date.toLocaleString('it-IT');
+}
+
+function renderAdminStock() {
+  if (state.stockError) {
+    return `<div class="error-box">${escapeHtml(state.stockError)}</div>`;
+  }
+  const openReports = state.stockReports.filter(report =>
+    report.status === 'low' || report.status === 'out'
+  );
+  const history = state.stockHistory;
+  const rows = state.stockAdminFilter === 'open' ? openReports : history;
+  let html = `<div class="stock-filter-row" role="group" aria-label="Filtra scorte">
+    <button class="stock-filter ${state.stockAdminFilter === 'open' ? 'active' : ''}"
+      data-action="stockAdminFilter" data-filter="open">Da acquistare (${openReports.length})</button>
+    <button class="stock-filter ${state.stockAdminFilter === 'history' ? 'active' : ''}"
+      data-action="stockAdminFilter" data-filter="history">Storico (${history.length})</button>
+  </div>`;
+  if (!rows.length) {
+    html += `<div class="empty">${state.stockAdminFilter === 'open'
+      ? 'Nessun prodotto da acquistare.'
+      : 'Nessun rifornimento registrato.'}</div>`;
+  } else if (state.stockAdminFilter === 'open') {
+    html += openReports.map(report => {
+      const product = state.stockProducts.find(item => item.id === report.productId);
+      const name = product ? product.name : report.productName;
+      const label = report.status === 'out' ? 'Finito' : 'Sta finendo';
+      return `<article class="stock-report-card ${report.status}">
+        <div class="stock-report-content">
+          <div class="stock-report-top">
+            <div class="stock-report-name">${escapeHtml(name || 'Prodotto')}</div>
+            <span class="stock-report-state ${report.status}">${label}</span>
+          </div>
+          <div class="stock-report-meta">Ultima segnalazione: ${escapeHtml(formatStockDate(report.updatedAt))}</div>
+          ${report.note ? `<div class="stock-report-note"><strong>Nota:</strong> ${escapeHtml(report.note)}</div>` : ''}
+        </div>
+        <button class="btn btn-primary" data-action="stockRestocked"
+          data-report-id="${escapeAttr(report.id)}">✓ Rifornito</button>
+      </article>`;
+    }).join('');
+  } else {
+    html += history.map(entry => `<article class="stock-report-card">
+      <div class="stock-report-name">${escapeHtml(entry.productName || 'Prodotto')}</div>
+      <span class="stock-report-state ${entry.previousStatus}">
+        ${entry.previousStatus === 'out' ? 'Finito' : 'Sta finendo'}
+      </span>
+      <div class="stock-report-meta">
+        Segnalato: ${escapeHtml(formatStockDate(entry.reportedAt))}<br>
+        Rifornito: ${escapeHtml(formatStockDate(entry.restockedAt))}
+      </div>
+      ${entry.note ? `<div class="stock-report-note"><strong>Nota:</strong> ${escapeHtml(entry.note)}</div>` : ''}
+    </article>`).join('');
+  }
+
+  html += `<details class="card">
+    <summary class="card-title">Gestisci elenco prodotti</summary>
+    <div class="card-sub">I prodotti attivi sono visibili allo Staff. Disattiva quelli non più usati.</div>
+    <form data-stock-product-form>
+      <label class="lbl" for="newStockProduct">Aggiungi prodotto</label>
+      <input class="inp" id="newStockProduct" name="productName" maxlength="80"
+        placeholder="Nome prodotto" required>
+      <button class="btn btn-primary" type="submit">Aggiungi all’elenco</button>
+    </form>
+    ${state.stockProducts.map(product => {
+      const draft = state.stockProductNameDrafts[product.id];
+      const name = draft === undefined ? product.name : draft;
+      return `<div class="stock-product-card ${product.active ? '' : 'stock-product-inactive'}">
+        <div class="stock-product-row">
+          <input class="inp" type="text" maxlength="80"
+            data-stock-product-name="${escapeAttr(product.id)}"
+            value="${escapeAttr(name)}" aria-label="Nome prodotto">
+          <div class="stock-product-actions">
+            <button class="btn btn-outline" data-action="saveStockProduct"
+              data-product-id="${escapeAttr(product.id)}">Salva</button>
+            <button class="btn ${product.active ? 'btn-danger' : 'btn-primary'}"
+              data-action="toggleStockProduct" data-product-id="${escapeAttr(product.id)}"
+              data-active="${product.active ? 'false' : 'true'}">
+              ${product.active ? 'Disattiva' : 'Riattiva'}
+            </button>
+          </div>
+        </div>
+        ${product.active ? '' : '<div class="stock-report-meta">Prodotto disattivato: nascosto allo Staff.</div>'}
+      </div>`;
+    }).join('')}
+  </details>`;
+  return html;
+}
+
 function renderMaintenanceReport(report) {
   const room = state.settings.rooms[report.roomId];
   const roomName = room ? room.name : `Camera ${report.roomId + 1}`;
@@ -1845,41 +2359,41 @@ function renderMaintenanceReport(report) {
   const expanded = state.expandedMaintenanceIds.has(report.id);
   const urgent = report.priority === 'urgent';
   const resolved = report.status === 'resolved';
-  return `<details class="maintenance-card ${urgent ? 'urgent' : ''} ${resolved ? 'resolved' : ''}"
-    ${expanded ? 'open' : ''} data-maintenance-card="${escapeAttr(report.id)}">
-    <summary class="maintenance-summary">
-      ${photoUrl ? `<img class="maintenance-thumb" src="${escapeAttr(photoUrl)}" alt="">` : ''}
-      <span class="maintenance-summary-main">
-        <span class="maintenance-summary-room">${escapeHtml(roomName)}</span>
-        <span class="maintenance-summary-description">${escapeHtml(report.description || categoryLabels[report.category] || 'Segnalazione senza descrizione')}</span>
-        <span class="maintenance-summary-meta">${created}</span>
-      </span>
-      <span class="maintenance-priority ${urgent ? 'urgent' : ''}">${urgent ? 'URGENTE' : 'Normale'}</span>
-    </summary>
-    <div class="maintenance-details">
-      <div class="maintenance-detail-row"><strong>Categoria:</strong> ${escapeHtml(categoryLabels[report.category] || report.category || 'Altro')}</div>
-      <div class="maintenance-detail-row"><strong>Camera:</strong> ${escapeHtml(roomName)}</div>
-      <div class="maintenance-detail-row"><strong>Segnalata:</strong> ${escapeHtml(created)}</div>
-      <div class="maintenance-detail-row"><strong>Priorità:</strong> ${urgent ? '<span class="urgent-indicator">Urgente</span>' : 'Normale'}</div>
-      <div class="maintenance-detail-row"><strong>Stato:</strong> ${resolved ? 'Risolto' : 'Da fare'}</div>
-      <div class="maintenance-detail-row"><strong>Descrizione:</strong> ${escapeHtml(report.description || 'Nessuna descrizione')}</div>
-      ${photoUrl ? `<button class="maintenance-photo-open" data-action="viewMaintenancePhoto"
-        data-photo-url="${escapeAttr(photoUrl)}" data-photo-alt="${escapeAttr(roomName)}">
-        <img class="maintenance-photo" src="${escapeAttr(photoUrl)}" alt="Foto segnalazione manutenzione">
-      </button>` : report.photoAvailable
-        ? `<div class="maintenance-upload-status">${photoLoading ? 'Caricamento foto da Firestore…' : 'La foto verrà caricata aprendo la segnalazione.'}</div>`
-        : ''}
-      ${photoError ? `<div class="error-box">${escapeHtml(photoError)}</div>` : ''}
-      ${report.resolvedAt && report.resolvedAt.toDate
-        ? `<div class="maintenance-detail-row"><strong>Risolta:</strong> ${escapeHtml(report.resolvedAt.toDate().toLocaleString('it-IT'))}</div>`
-        : ''}
-      <div class="maintenance-actions">
-        <button class="btn ${resolved ? 'maintenance-reopen' : 'maintenance-resolve'}"
-          data-action="setMaintenanceStatus" data-report-id="${escapeAttr(report.id)}"
-          data-resolved="${resolved ? 'false' : 'true'}">${resolved ? 'Riapri segnalazione' : 'Segna risolto'}</button>
+  return `<div class="maintenance-report-row">
+    <details class="maintenance-card ${urgent ? 'urgent' : ''} ${resolved ? 'resolved' : ''}"
+      ${expanded ? 'open' : ''} data-maintenance-card="${escapeAttr(report.id)}">
+      <summary class="maintenance-summary">
+        ${photoUrl ? `<img class="maintenance-thumb" src="${escapeAttr(photoUrl)}" alt="">` : ''}
+        <span class="maintenance-summary-main">
+          <span class="maintenance-summary-room">${escapeHtml(roomName)}</span>
+          <span class="maintenance-summary-description">${escapeHtml(report.description || categoryLabels[report.category] || 'Segnalazione senza descrizione')}</span>
+          <span class="maintenance-summary-meta">${created}</span>
+        </span>
+        <span class="maintenance-priority ${urgent ? 'urgent' : ''}">${urgent ? 'URGENTE' : 'Normale'}</span>
+      </summary>
+      <div class="maintenance-details">
+        <div class="maintenance-detail-row"><strong>Categoria:</strong> ${escapeHtml(categoryLabels[report.category] || report.category || 'Altro')}</div>
+        <div class="maintenance-detail-row"><strong>Camera:</strong> ${escapeHtml(roomName)}</div>
+        <div class="maintenance-detail-row"><strong>Segnalata:</strong> ${escapeHtml(created)}</div>
+        <div class="maintenance-detail-row"><strong>Priorità:</strong> ${urgent ? '<span class="urgent-indicator">Urgente</span>' : 'Normale'}</div>
+        <div class="maintenance-detail-row"><strong>Stato:</strong> ${resolved ? 'Risolto' : 'Da fare'}</div>
+        <div class="maintenance-detail-row"><strong>Descrizione:</strong> ${escapeHtml(report.description || 'Nessuna descrizione')}</div>
+        ${photoUrl ? `<button class="maintenance-photo-open" data-action="viewMaintenancePhoto"
+          data-photo-url="${escapeAttr(photoUrl)}" data-photo-alt="${escapeAttr(roomName)}">
+          <img class="maintenance-photo" src="${escapeAttr(photoUrl)}" alt="Foto segnalazione manutenzione">
+        </button>` : report.photoAvailable
+          ? `<div class="maintenance-upload-status">${photoLoading ? 'Caricamento foto da Firestore…' : 'La foto verrà caricata aprendo la segnalazione.'}</div>`
+          : ''}
+        ${photoError ? `<div class="error-box">${escapeHtml(photoError)}</div>` : ''}
+        ${report.resolvedAt && report.resolvedAt.toDate
+          ? `<div class="maintenance-detail-row"><strong>Risolta:</strong> ${escapeHtml(report.resolvedAt.toDate().toLocaleString('it-IT'))}</div>`
+          : ''}
       </div>
-    </div>
-  </details>`;
+    </details>
+    <button class="maintenance-row-action ${resolved ? 'maintenance-reopen' : 'maintenance-resolve'}"
+      data-action="setMaintenanceStatus" data-report-id="${escapeAttr(report.id)}"
+      data-resolved="${resolved ? 'false' : 'true'}">${resolved ? 'Riapri' : '✓ Risolto'}</button>
+  </div>`;
 }
 
 function renderAdminMonth(date) {
@@ -2193,6 +2707,50 @@ document.getElementById('main').addEventListener('click', async e => {
     state.maintenanceFilter = btn.dataset.filter;
     render();
   }
+  else if (action === 'stockSelect') {
+    state.stockSelections[btn.dataset.productId] = btn.dataset.stockStatus;
+    render();
+  }
+  else if (action === 'stockAdminFilter') {
+    state.stockAdminFilter = btn.dataset.filter;
+    render();
+  }
+  else if (action === 'stockRestocked') {
+    const report = state.stockReports.find(item => item.id === btn.dataset.reportId);
+    if (!report) return;
+    btn.disabled = true;
+    try {
+      await markStockRestocked(report);
+      state.adminActionError = null;
+      toast('Prodotto segnato come rifornito');
+    } catch (err) {
+      state.adminActionError = 'Impossibile aggiornare la scorta: ' + err.message;
+      render();
+    }
+  }
+  else if (action === 'saveStockProduct') {
+    const productId = btn.dataset.productId;
+    btn.disabled = true;
+    try {
+      await saveStockProduct(productId, state.stockProductNameDrafts[productId] || '');
+      delete state.stockProductNameDrafts[productId];
+      state.adminActionError = null;
+      toast('Nome prodotto salvato');
+    } catch (err) {
+      state.adminActionError = 'Impossibile salvare il prodotto: ' + err.message;
+      render();
+    }
+  }
+  else if (action === 'toggleStockProduct') {
+    try {
+      await setStockProductActive(btn.dataset.productId, btn.dataset.active === 'true');
+      state.adminActionError = null;
+      toast(btn.dataset.active === 'true' ? 'Prodotto riattivato' : 'Prodotto disattivato');
+    } catch (err) {
+      state.adminActionError = 'Impossibile aggiornare il prodotto: ' + err.message;
+      render();
+    }
+  }
   else if (action === 'newMaintenanceReport') {
     showMaintenanceForm(Number(btn.dataset.room));
   }
@@ -2268,9 +2826,16 @@ document.getElementById('main').addEventListener('click', async e => {
 });
 
 document.getElementById('main').addEventListener('input', e => {
-  if (!e.target.matches('[data-room-name]')) return;
-  const title = e.target.closest('.room-settings').querySelector('.room-title');
-  title.textContent = '🏠 ' + (e.target.value.trim() || e.target.placeholder);
+  if (e.target.matches('[data-room-name]')) {
+    const title = e.target.closest('.room-settings').querySelector('.room-title');
+    title.textContent = '🏠 ' + (e.target.value.trim() || e.target.placeholder);
+  } else if (e.target.matches('[data-stock-product-name]')) {
+    state.stockProductNameDrafts[e.target.dataset.stockProductName] = e.target.value;
+  } else if (e.target.matches('[name="stockNote"]')) {
+    state.stockNote = e.target.value;
+  } else if (e.target.matches('[name="stockCustomName"]')) {
+    state.stockCustomName = e.target.value;
+  }
 });
 
 document.getElementById('main').addEventListener('toggle', e => {
@@ -2294,6 +2859,51 @@ document.getElementById('main').addEventListener('change', e => {
       state.adminDate = `${e.target.value}-01`;
     }
     render();
+  } else if (e.target.matches('[name="stockCustomStatus"]')) {
+    state.stockCustomStatus = e.target.value;
+  }
+});
+
+document.getElementById('main').addEventListener('submit', async e => {
+  const reportForm = e.target.closest('[data-stock-report-form]');
+  if (reportForm) {
+    e.preventDefault();
+    if (reportForm.dataset.submitting === '1') return;
+    reportForm.dataset.submitting = '1';
+    const submit = reportForm.querySelector('[type="submit"]');
+    const feedback = reportForm.querySelector('[data-stock-feedback]');
+    submit.disabled = true;
+    feedback.hidden = false;
+    feedback.className = 'maintenance-upload-status';
+    feedback.textContent = 'Invio segnalazione…';
+    try {
+      await submitStockReports(reportForm);
+      toast('Segnalazione scorte inviata');
+      render();
+    } catch (err) {
+      feedback.className = 'error-box';
+      feedback.textContent = 'Invio non riuscito: ' + err.message;
+      delete reportForm.dataset.submitting;
+      submit.disabled = false;
+    }
+    return;
+  }
+
+  const productForm = e.target.closest('[data-stock-product-form]');
+  if (!productForm) return;
+  e.preventDefault();
+  const submit = productForm.querySelector('[type="submit"]');
+  submit.disabled = true;
+  try {
+    await saveStockProduct(null, productForm.elements.productName.value);
+    state.adminActionError = null;
+    toast('Prodotto aggiunto all’elenco');
+    render();
+  } catch (err) {
+    state.adminActionError = 'Impossibile aggiungere il prodotto: ' + err.message;
+    render();
+  } finally {
+    submit.disabled = false;
   }
 });
 
@@ -2400,9 +3010,14 @@ onAuthStateChanged(auth, async user => {
     user && user.email === ADMIN_EMAIL && user.emailVerified
   );
   if (state.isAdmin) {
-    if (!wasAdmin && state.view === 'home') state.view = 'admin';
+    if (!wasAdmin && (state.view === 'home' || state.view === 'stock')) state.view = 'admin';
     if (!wasAdmin) {
       subscribeToMaintenanceReports();
+      subscribeToAdminStock();
+      ensureDefaultStockProducts().catch(error => {
+        state.stockError = 'Impossibile preparare l’elenco prodotti: ' + error.message;
+        render();
+      });
     }
     try {
       await loadBlockOverrides();
@@ -2411,6 +3026,7 @@ onAuthStateChanged(auth, async user => {
     }
   } else {
     state.adminActionError = null;
+    if (wasAdmin) stopStockSubscriptions();
     if (unsubscribeMaintenanceReports) {
       unsubscribeMaintenanceReports();
       unsubscribeMaintenanceReports = null;
@@ -2428,6 +3044,7 @@ onAuthStateChanged(auth, async user => {
       }
     } else if (user.isAnonymous) {
       state.staffAuthError = null;
+      if (!unsubscribeStockProducts) subscribeToStaffStockProducts();
     }
   }
   render();

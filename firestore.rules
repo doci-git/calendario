@@ -66,6 +66,88 @@ service cloud.firestore {
         );
     }
 
+    function validStockProduct() {
+      return request.resource.data.keys().hasAll(['name', 'active', 'updatedAt'])
+        && request.resource.data.keys().hasOnly([
+          'name', 'active', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.active is bool
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function activeStockProductExists(productId, productName) {
+      return exists(/databases/$(database)/documents/apps/pulizieAdmin/stockProducts/$(productId))
+        && get(/databases/$(database)/documents/apps/pulizieAdmin/stockProducts/$(productId)).data.active == true
+        && get(/databases/$(database)/documents/apps/pulizieAdmin/stockProducts/$(productId)).data.name == productName;
+    }
+
+    function validStockReport(reportId) {
+      return request.resource.data.keys().hasAll([
+          'productId', 'productName', 'custom', 'status', 'note',
+          'createdAt', 'updatedAt', 'reportedBy'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'productId', 'productName', 'custom', 'status', 'note',
+          'createdAt', 'updatedAt', 'reportedBy', 'restockedAt', 'restockedBy'
+        ])
+        && request.resource.data.productId == reportId
+        && request.resource.data.productName is string
+        && request.resource.data.productName.size() > 0
+        && request.resource.data.productName.size() <= 80
+        && request.resource.data.custom is bool
+        && request.resource.data.status in ['low', 'out']
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 500
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.reportedBy == request.auth.uid
+        && (
+          request.resource.data.custom
+          || activeStockProductExists(reportId, request.resource.data.productName)
+        );
+    }
+
+    function validStockState(stateId) {
+      return request.resource.data.keys().hasAll([
+          'productId', 'status', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'productId', 'status', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.productId == stateId
+        && request.resource.data.status in ['low', 'out', 'ok']
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function validStaffStockStateCreate(stateId) {
+      return validStockState(stateId)
+        && request.resource.data.status in ['low', 'out']
+        && request.resource.data.createdAt == request.time;
+    }
+
+    function validStaffStockStateUpdate(stateId) {
+      return validStockState(stateId)
+        && request.resource.data.status in ['low', 'out']
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'createdAt', 'updatedAt'])
+        && (
+          request.resource.data.status == 'out'
+          || resource.data.status == 'low'
+            && request.resource.data.status == 'low'
+          || resource.data.status == 'ok'
+            && request.resource.data.status == 'low'
+            && request.resource.data.createdAt == request.time
+        )
+        && (
+          request.resource.data.createdAt == resource.data.createdAt
+          || resource.data.status == 'ok'
+            && request.resource.data.createdAt == request.time
+        );
+    }
+
     match /apps/pulizie {
       allow read: if true;
       allow write: if isAdmin();
@@ -99,6 +181,56 @@ service cloud.firestore {
 
     match /apps/pulizieAdmin/cleaningArchive/{dateId} {
       allow read, write: if isAdmin();
+    }
+
+    match /apps/pulizieAdmin/stockProducts/{productId} {
+      allow read: if isAdmin()
+        || (isAnonymousStaff() && resource.data.active == true);
+      allow create, update: if isAdmin() && validStockProduct();
+      allow delete: if false;
+    }
+
+    match /apps/pulizieAdmin/stockReports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isAnonymousStaff()
+        && validStockReport(reportId)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAnonymousStaff()
+        && validStockReport(reportId)
+        && (
+          request.resource.data.createdAt == resource.data.createdAt
+          || resource.data.status == 'restocked'
+            && request.resource.data.createdAt == request.time
+        )
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly([
+            'productName', 'custom', 'status', 'note',
+            'updatedAt', 'reportedBy', 'createdAt'
+          ])
+        && (
+          request.resource.data.status == 'out'
+          || resource.data.status == 'low'
+            && request.resource.data.status == 'low'
+          || resource.data.status == 'restocked'
+            && request.resource.data.status in ['low', 'out']
+        );
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /apps/pulizieAdmin/stockStates/{stateId} {
+      allow get: if isAdmin() || isAnonymousStaff();
+      allow list: if isAdmin();
+      allow create: if (isAdmin() && validStockState(stateId))
+        || (isAnonymousStaff() && validStaffStockStateCreate(stateId));
+      allow update: if (isAdmin() && validStockState(stateId))
+        || (isAnonymousStaff() && validStaffStockStateUpdate(stateId));
+      allow delete: if false;
+    }
+
+    match /apps/pulizieAdmin/stockHistory/{historyId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
     }
 
     match /{document=**} {

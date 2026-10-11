@@ -4,8 +4,8 @@ https://doci-git.github.io/calendario/
 
 Web app statica per gestire le pulizie delle camere usando i calendari iCal Airbnb e
 Booking. Lo staff continua a usare le schermate Pulizie e Calendario e può inviare
-segnalazioni di manutenzione; l’area Admin organizza calendario, riepiloghi e
-manutenzioni in tre schede.
+segnalazioni di manutenzione; l’area Admin organizza calendario, riepiloghi,
+manutenzioni e scorte.
 
 ## Area Admin e dati
 
@@ -30,6 +30,11 @@ manutenzioni in tre schede.
 - La scheda **Manutenzioni** mostra le segnalazioni aperte, risolte o tutte. L’Admin
   può aprirle, vedere le foto, risolverle e riaprirle; i report risolti rimangono nello
   storico. Il simbolo 🔧 nel calendario apre la relativa segnalazione.
+- La scheda **Scorte** raccoglie le segnalazioni di prodotti generali: lo Staff marca
+  soltanto ciò che sta finendo o è finito, senza quantità o camere. L’Admin vede
+  una segnalazione aperta per prodotto, può segnare il rifornimento e consultare
+  lo storico; nella stessa scheda può aggiungere, rinominare o disattivare prodotti.
+  I prodotti predefiniti vengono creati al primo accesso Admin dopo la pubblicazione.
 - Sotto ogni pulizia lo Staff può segnalare un problema, scegliere camera, categoria
   e priorità e allegare una foto facoltativa. Le immagini vengono ridimensionate e
   compresse nel browser e salvate in una raccolta Firestore separata dai dati della
@@ -57,6 +62,14 @@ una segnalazione, ma non può leggerla o modificarne lo stato. Per limitare l’
 esclusivamente ai dipendenti servirebbero account individuali o un’autorizzazione
 attendibile lato server.
 
+Le segnalazioni scorte vengono salvate in `apps/pulizieAdmin/stockReports` con un
+documento per ID prodotto, così non si creano doppioni; `Finito` prevale su
+`Sta finendo`. I rifornimenti sono conservati in `stockHistory`. Lo stato condiviso
+minimo per le transazioni è salvato in `stockStates`: lo Staff può leggere solo
+questo stato essenziale e non note o dettagli delle segnalazioni. Catalogo, report
+completi, storico e rifornimenti restano riservati all’Admin secondo i permessi
+definiti in `firestore.rules`.
+
 ## Configurazione Firebase (necessaria prima della pubblicazione)
 
 1. In Firebase Console, apri il progetto esistente `calendario-690a0` (non crearne
@@ -79,7 +92,10 @@ attendibile lato server.
    Il file `firestore.rules` permette la lettura delle impostazioni necessarie allo
    Staff, ma consente di modificarle solo all’account Admin. I report possono essere
    creati da utenti anonimi autenticati; solo l’Admin può leggerli o cambiarne lo
-   stato. Le foto sono salvate in una raccolta Firestore dedicata: lo Staff può
+   stato. Per le scorte, lo Staff legge i prodotti attivi e lo stato minimo per
+   inviare o aggiornare segnalazioni senza leggerne i dettagli o chiuderle;
+   catalogo, report completi, rifornimenti e storico restano riservati all’Admin.
+   Le foto sono salvate in una raccolta Firestore dedicata: lo Staff può
    crearle e rimuovere un allegato rimasto orfano in caso di errore, mentre solo
    l’Admin può leggerle. Anche lo storico pulizie è leggibile e modificabile solo
    dall’Admin. Non condividere l’app prima di aver pubblicato le regole: le vecchie

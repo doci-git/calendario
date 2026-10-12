@@ -109,8 +109,8 @@ definiti in `firestore.rules`.
 ## Pubblicazione su GitHub Pages
 
 1. Pubblica prima le regole Firestore come descritto sopra.
-2. Fai push su GitHub delle modifiche a `index.html`, `README.md`, `firebase.json`
-   e `firestore.rules`.
+2. Fai push su GitHub delle modifiche a `index.html`, `style.css`, `app.js`,
+   `README.md`, `firebase.json` e `firestore.rules`.
 3. In GitHub, apri **Settings → Pages** e seleziona il branch e la cartella usati
    dal repository per Pages. Se Pages è già configurato, il push pubblica
    automaticamente la nuova versione.

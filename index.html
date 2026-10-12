@@ -1866,6 +1866,30 @@ function sameArchivedEntries(a, b) {
     a.every((entry, index) => entry.roomId === b[index].roomId);
 }
 
+function mergeArchivedEntries(archivedEntries, liveEntries, syncedRooms) {
+  const entriesByRoom = new Map();
+  (Array.isArray(archivedEntries) ? archivedEntries : []).forEach(entry => {
+    if (Number.isInteger(entry.roomId) && !syncedRooms.has(entry.roomId)) {
+      entriesByRoom.set(entry.roomId, { roomId: entry.roomId });
+    }
+  });
+  liveEntries.forEach(entry => {
+    if (syncedRooms.has(entry.roomId)) entriesByRoom.set(entry.roomId, entry);
+  });
+  return Array.from(entriesByRoom.values()).sort((a, b) => a.roomId - b.roomId);
+}
+
+function mergeHistoricalEntries(archivedEntries, liveEntries) {
+  const entriesByRoom = new Map();
+  [...(Array.isArray(archivedEntries) ? archivedEntries : []), ...liveEntries]
+    .forEach(entry => {
+      if (Number.isInteger(entry.roomId)) {
+        entriesByRoom.set(entry.roomId, { roomId: entry.roomId });
+      }
+    });
+  return Array.from(entriesByRoom.values()).sort((a, b) => a.roomId - b.roomId);
+}
+
 async function persistCleaningArchive(failedTasks) {
   if (!state.isAdmin) return;
 
@@ -1893,17 +1917,32 @@ async function persistCleaningArchive(failedTasks) {
   const archivedByDate = new Map(futureSnapshot.docs.map(item => [item.id, item.data()]));
   const writes = [];
 
-  const pastWrites = await Promise.all(Array.from(eventDates)
-    .filter(date => date < today && liveEntriesByDate.has(date))
+  const pastDates = new Set([
+    ...Array.from(eventDates).filter(date => date < today),
+    ...Array.from(archivedByDate.keys()).filter(date => date >= yesterday && date < today)
+  ]);
+  const pastWrites = await Promise.all(Array.from(pastDates)
     .map(async date => {
       const archiveRef = doc(cleaningArchiveRef, date);
-      const existing = await getDoc(archiveRef);
-      if (existing.exists()) return null;
+      let existing = archivedByDate.get(date);
+      if (!existing) {
+        const snapshot = await getDoc(archiveRef);
+        if (snapshot.exists()) existing = snapshot.data();
+      }
+      const entries = mergeHistoricalEntries(
+        existing && existing.entries,
+        liveEntriesByDate.get(date) || []
+      );
+      if (!entries.length) {
+        if (!existing || existing.completed === true) return null;
+      }
+      if (existing && existing.completed === true &&
+          sameArchivedEntries(existing.entries, entries)) return null;
       return {
         ref: archiveRef,
         data: {
           date,
-          entries: liveEntriesByDate.get(date),
+          entries,
           completed: true,
           updatedAt: serverTimestamp()
         }
@@ -1917,27 +1956,14 @@ async function persistCleaningArchive(failedTasks) {
   ]);
   for (const date of futureDates) {
     const existing = archivedByDate.get(date);
-    if (date < today) {
-      if (existing && existing.completed !== true) {
-        writes.push({
-          ref: doc(cleaningArchiveRef, date),
-          data: { ...existing, completed: true, updatedAt: serverTimestamp() }
-        });
-      }
-      continue;
-    }
+    if (date < today) continue;
 
     const priorEntries = existing && Array.isArray(existing.entries) ? existing.entries : [];
-    const entriesByRoom = new Map();
-    priorEntries.forEach(entry => {
-      if (Number.isInteger(entry.roomId) && !syncedRooms.has(entry.roomId)) {
-        entriesByRoom.set(entry.roomId, { roomId: entry.roomId });
-      }
-    });
-    (liveEntriesByDate.get(date) || []).forEach(entry => {
-      if (syncedRooms.has(entry.roomId)) entriesByRoom.set(entry.roomId, entry);
-    });
-    const entries = Array.from(entriesByRoom.values()).sort((a, b) => a.roomId - b.roomId);
+    const entries = mergeArchivedEntries(
+      priorEntries,
+      liveEntriesByDate.get(date) || [],
+      syncedRooms
+    );
     const archiveRef = doc(cleaningArchiveRef, date);
     if (!entries.length) {
       if (existing) writes.push({ ref: archiveRef, delete: true });
@@ -1961,9 +1987,12 @@ async function persistCleaningArchive(failedTasks) {
 }
 
 function ensureAdminArchiveLoaded(start, end) {
-  if (end > new Date(new Date().getFullYear(), new Date().getMonth(), 1)) return;
   const startKey = toKey(start);
-  const endKey = toKey(end);
+  const today = toKey(new Date());
+  const archiveEnd = end < fromKey(today) ? end : fromKey(today);
+  if (start >= archiveEnd) return null;
+
+  const endKey = toKey(archiveEnd);
   const key = `${startKey}|${endKey}`;
   if (state.adminArchiveRange === key || state.adminArchiveRequest === key) return;
 
@@ -1988,6 +2017,7 @@ function ensureAdminArchiveLoaded(start, end) {
     state.adminArchiveError = 'Impossibile caricare lo storico delle pulizie: ' + error.message;
     render();
   });
+  return key;
 }
 
 function renderAdminStats(summary, monthly) {
@@ -2186,23 +2216,33 @@ function renderAdminSummary() {
   const end = monthly
     ? new Date(date.getFullYear(), date.getMonth() + 1, 1)
     : addDays(start, 7);
-  const currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const historicalMonth = monthly && end <= currentMonth;
-  if (historicalMonth) ensureAdminArchiveLoaded(start, end);
-  const archiveKey = `${toKey(start)}|${toKey(end)}`;
-  const hasArchivedEntries = historicalMonth && state.adminArchiveRange === archiveKey &&
-    state.adminArchiveEntries.length > 0;
-  let summary;
-  if (hasArchivedEntries) {
-    summary = state.adminArchiveEntries.reduce((total, day) => {
-      const count = Array.isArray(day.entries) ? day.entries.length : 0;
-      total.planned += count;
-      if (day.completed) total.completed += count;
-      return total;
-    }, { planned: 0, completed: 0 });
-  } else {
-    summary = getAdminSummary(start, end);
+  const today = toKey(new Date());
+  const archiveEnd = end < fromKey(today) ? end : fromKey(today);
+  const archiveKey = start < archiveEnd
+    ? `${toKey(start)}|${toKey(archiveEnd)}`
+    : null;
+  if (archiveKey) ensureAdminArchiveLoaded(start, archiveEnd);
+  const archiveLoaded = archiveKey !== null && state.adminArchiveRange === archiveKey;
+  const archivedByDate = archiveLoaded
+    ? new Map(state.adminArchiveEntries.map(day => [day.date, day]))
+    : new Map();
+  const hasArchivedEntries = archivedByDate.size > 0;
+  const summary = { planned: 0, completed: 0 };
+  for (let day = new Date(start); day < end; day = addDays(day, 1)) {
+    const dayKey = toKey(day);
+    const archivedDay = dayKey < today ? archivedByDate.get(dayKey) : null;
+    if (archivedDay) {
+      const count = Array.isArray(archivedDay.entries) ? archivedDay.entries.length : 0;
+      summary.planned += count;
+      if (archivedDay.completed) summary.completed += count;
+    } else {
+      const liveSummary = getAdminSummary(day, addDays(day, 1));
+      summary.planned += liveSummary.planned;
+      summary.completed += liveSummary.completed;
+    }
   }
+  const waitingForArchive = archiveKey !== null &&
+    state.adminArchiveRequest === archiveKey && !archiveLoaded;
   let html = `<div class="admin-controls">
     <button class="btn ${!monthly ? 'btn-primary' : 'btn-outline'}"
       data-action="adminPeriod" data-target="summary" data-period="week">Settimana</button>
@@ -2215,12 +2255,10 @@ function renderAdminSummary() {
     ? `<div class="error-box">${escapeHtml(state.adminArchiveError)}</div>`
     : ''}
   <div class="admin-note">${hasArchivedEntries
-    ? 'Riepilogo ricavato dallo storico salvato su Firestore.'
-    : state.adminArchiveLoading && historicalMonth
+    ? 'I giorni passati con uno storico salvato usano i dati Firestore; gli altri usano i dati iCal disponibili.'
+    : waitingForArchive
       ? 'Caricamento dei dati storici…'
-      : historicalMonth
-        ? 'Nessuno storico salvato per questo mese: sono mostrati i dati iCal ancora disponibili.'
-        : '1 checkout = 1 cambio completo di biancheria. Il costo mensile considera le pulizie dei giorni passati.'}</div>`;
+      : '1 checkout = 1 cambio completo di biancheria. Il costo mensile considera le pulizie dei giorni passati.'}</div>`;
   return html;
 }
 

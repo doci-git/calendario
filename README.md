@@ -24,9 +24,12 @@ manutenzioni e scorte.
   le frecce.
 - L’Admin archivia le pulizie per data in Firestore dopo la sincronizzazione dei
   calendari. Il riepilogo dei mesi passati usa questi dati salvati, anche quando gli
-  eventi non sono più presenti nei feed iCal. L’archivio inizia a raccogliere dati
-  dopo la pubblicazione di questa funzione e il primo accesso/sincronizzazione Admin;
-  i mesi precedenti senza dati archiviati mostrano ancora quanto disponibile dai feed.
+  eventi non sono più presenti nei feed iCal. Le sincronizzazioni successive
+  possono aggiungere ai giorni passati pulizie rilevate dai feed, senza cancellare
+  voci già archiviate anche se non compaiono più nei feed.
+  L’archivio inizia a raccogliere dati dopo la pubblicazione di questa funzione e il
+  primo accesso/sincronizzazione Admin; i mesi precedenti senza dati archiviati
+  mostrano ancora quanto disponibile dai feed.
 - La scheda **Manutenzioni** mostra le segnalazioni aperte, risolte o tutte. L’Admin
   può aprirle, vedere le foto, risolverle e riaprirle; i report risolti rimangono nello
   storico. Il simbolo 🔧 nel calendario apre la relativa segnalazione.

@@ -2308,7 +2308,56 @@ function showMaintenancePhoto(url, alt) {
     </div>
   </div>`;
 }
+
+function showDoorConfirmation() {
+  document.getElementById('modal').innerHTML = `<div class="modal-bg" data-modal-bg>
+    <div class="modal door-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="doorConfirmTitle">
+      <div class="door-confirm-icon" aria-hidden="true">🚪</div>
+      <div class="modal-title" id="doorConfirmTitle">Conferma apertura</div>
+      <p class="door-confirm-message">Attenzione: stai per aprire la porta.</p>
+      <p class="door-confirm-note">Vuoi procedere?</p>
+      <div class="door-confirm-actions">
+        <button class="btn btn-close" type="button" data-action="closeModal">Annulla</button>
+        <button class="btn btn-primary door-confirm-submit" type="button" data-action="confirmOpenDoor">
+          Sì, apri la porta
+        </button>
+      </div>
+    </div>
+  </div>`;
+  document.querySelector('#modal [data-action="closeModal"]').focus();
+}
+
 function closeModal() { document.getElementById('modal').innerHTML = ''; }
+
+async function sendDoorOpen() {
+  try {
+    if (!auth.currentUser) throw new Error('Accesso app non pronto. Riprova tra poco.');
+    if (DOOR_WORKER_URL.includes('<')) {
+      throw new Error('Completa prima la configurazione del Worker Cloudflare.');
+    }
+    const response = await fetch(DOOR_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Comando rifiutato.');
+    try {
+      await addDoc(doorOpeningsRef, {
+        openedAt: serverTimestamp(),
+        openedBy: auth.currentUser.uid
+      });
+    } catch (err) {
+      toast('Porta aperta, ma storico non salvato: ' + err.message);
+      return;
+    }
+    toast('Comando di apertura inviato');
+  } catch (err) {
+    toast(err.message === 'Failed to fetch'
+      ? 'Worker non raggiungibile. Controlla URL e connessione.'
+      : err.message);
+  }
+}
 
 /* ============================================================
    SALVATAGGIO IMPOSTAZIONI
@@ -2381,36 +2430,7 @@ document.getElementById('main').addEventListener('click', async e => {
     showDetail(+btn.dataset.room, btn.dataset.date);
   }
   else if (action === 'openDoor') {
-    btn.disabled = true;
-    try {
-      if (!auth.currentUser) throw new Error('Accesso app non pronto. Riprova tra poco.');
-      if (DOOR_WORKER_URL.includes('<')) {
-        throw new Error('Completa prima la configurazione del Worker Cloudflare.');
-      }
-      const response = await fetch(DOOR_WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}'
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Comando rifiutato.');
-      try {
-        await addDoc(doorOpeningsRef, {
-          openedAt: serverTimestamp(),
-          openedBy: auth.currentUser.uid
-        });
-      } catch (err) {
-        toast('Porta aperta, ma storico non salvato: ' + err.message);
-        return;
-      }
-      toast('Comando di apertura inviato');
-    } catch (err) {
-      toast(err.message === 'Failed to fetch'
-        ? 'Worker non raggiungibile. Controlla URL e connessione.'
-        : err.message);
-    } finally {
-      btn.disabled = false;
-    }
+    showDoorConfirmation();
   }
   else if (action === 'saveSettings') {
     try {
@@ -2638,11 +2658,19 @@ document.getElementById('main').addEventListener('submit', async e => {
   }
 });
 
-document.getElementById('modal').addEventListener('click', e => {
+document.getElementById('modal').addEventListener('click', async e => {
   const btn = e.target.closest('[data-action]');
   if (btn) {
     const action = btn.dataset.action;
     if (action === 'closeModal') { closeModal(); return; }
+    if (action === 'confirmOpenDoor') {
+      btn.disabled = true;
+      btn.textContent = 'Apertura in corso…';
+      document.querySelector('#modal [data-action="closeModal"]').disabled = true;
+      await sendDoorOpen();
+      closeModal();
+      return;
+    }
     return;
   }
   if (e.target.hasAttribute('data-modal-bg')) closeModal();

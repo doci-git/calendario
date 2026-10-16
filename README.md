@@ -56,6 +56,13 @@ manutenzioni e scorte.
 - Nella schermata Pulizie il riepilogo dei prossimi 7 giorni è sostituito da un
   pulsante per aprire la porta. Il comando usa un Worker Cloudflare; la chiave
   Shelly resta secret del Worker e il pulsante non chiede un PIN.
+- L’Admin ha la scheda **Aperture porta**, con tutte le aperture registrate
+  dall’app, data/ora e UID dell’account Firebase che le ha inviate. Il registro
+  inizia quando vengono pubblicate le relative modifiche; gli eventi precedenti
+  non sono recuperabili. Lo staff usa l’accesso Firebase anonimo, quindi l’UID non
+  identifica una persona per nome. Il log viene scritto dal browser dopo la
+  risposta positiva del Worker: è utile come storico operativo, ma non è un audit
+  antimanomissione e richiede una connessione Firebase funzionante.
 
 Le impostazioni iCal restano nel documento `apps/pulizie`, leggibile dall’app per
 consentire allo Staff la sincronizzazione. Come ogni applicazione statica che legge
@@ -147,8 +154,16 @@ esposta.
 1. Pubblica prima le regole Firestore come descritto sopra.
 2. Fai push su GitHub delle modifiche a `index.html`, `style.css`, `app.js`,
    `README.md`, `firebase.json`, `firestore.rules` e `door-worker`.
-3. In GitHub, apri **Settings → Pages** e seleziona il branch e la cartella usati
+3. Pubblica anche le nuove regole Firestore per consentire allo Staff autenticato
+   di aggiungere un evento apertura e riservare allo stesso tempo lettura dello
+   storico all’Admin:
+
+   ```powershell
+   firebase deploy --only firestore:rules --project calendario-690a0
+   ```
+
+4. In GitHub, apri **Settings → Pages** e seleziona il branch e la cartella usati
    dal repository per Pages. Se Pages è già configurato, il push pubblica
    automaticamente la nuova versione.
-4. Apri la URL GitHub Pages e accedi all’area Admin. Usa **Aggiorna** per controllare
+5. Apri la URL GitHub Pages e accedi all’area Admin. Usa **Aggiorna** per controllare
    la sincronizzazione Airbnb/Booking e verifica il calendario e i riepiloghi.

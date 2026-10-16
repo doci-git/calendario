@@ -148,6 +148,13 @@ service cloud.firestore {
         );
     }
 
+    function validDoorOpening() {
+      return request.resource.data.keys().hasAll(['openedAt', 'openedBy'])
+        && request.resource.data.keys().hasOnly(['openedAt', 'openedBy'])
+        && request.resource.data.openedAt == request.time
+        && request.resource.data.openedBy == request.auth.uid;
+    }
+
     match /apps/pulizie {
       allow read: if true;
       allow write: if isAdmin();
@@ -230,6 +237,12 @@ service cloud.firestore {
 
     match /apps/pulizieAdmin/stockHistory/{historyId} {
       allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    match /apps/pulizieAdmin/doorOpenings/{openingId} {
+      allow read: if isAdmin();
+      allow create: if request.auth != null && validDoorOpening();
       allow update, delete: if false;
     }
 

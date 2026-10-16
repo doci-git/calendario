@@ -32,11 +32,13 @@ const { initializeApp } = firebaseAppSdk;
 const {
   doc,
   collection,
+  addDoc,
   deleteDoc,
   getDoc,
   getDocs,
   getFirestore,
   onSnapshot,
+  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -72,6 +74,7 @@ const stockProductsRef = collection(db, 'apps', 'pulizieAdmin', 'stockProducts')
 const stockReportsRef = collection(db, 'apps', 'pulizieAdmin', 'stockReports');
 const stockStatesRef = collection(db, 'apps', 'pulizieAdmin', 'stockStates');
 const stockHistoryRef = collection(db, 'apps', 'pulizieAdmin', 'stockHistory');
+const doorOpeningsRef = collection(db, 'apps', 'pulizieAdmin', 'doorOpenings');
 
 /* ============================================================
    COSTANTI
@@ -150,6 +153,9 @@ const state = {
   stockHistory: [],
   stockError: null,
   stockLoading: false,
+  doorOpenings: [],
+  doorHistoryLoading: true,
+  doorHistoryError: null,
   stockSelections: {},
   stockNote: '',
   stockCustomName: '',
@@ -291,6 +297,7 @@ async function saveBlockOverride(roomId, dateKey, blocked) {
   localStorage.setItem('pulizie_blocked', JSON.stringify(state.blockOverrides));
 }
 let unsubscribeMaintenanceReports = null;
+let unsubscribeDoorOpenings = null;
 let unsubscribeStockProducts = null;
 let unsubscribeStockReports = null;
 let unsubscribeStockHistory = null;
@@ -590,6 +597,28 @@ function subscribeToMaintenanceReports() {
     render();
   }, error => {
     state.maintenanceError = 'Impossibile aggiornare le segnalazioni: ' + error.message;
+    render();
+  });
+}
+
+function subscribeToDoorOpenings() {
+  if (unsubscribeDoorOpenings) unsubscribeDoorOpenings();
+  state.doorHistoryLoading = true;
+  state.doorHistoryError = null;
+  unsubscribeDoorOpenings = onSnapshot(query(
+    doorOpeningsRef,
+    orderBy('openedAt', 'desc')
+  ), snapshot => {
+    state.doorOpenings = snapshot.docs.map(item => ({
+      id: item.id,
+      ...item.data()
+    }));
+    state.doorHistoryLoading = false;
+    state.doorHistoryError = null;
+    render();
+  }, error => {
+    state.doorHistoryLoading = false;
+    state.doorHistoryError = 'Impossibile caricare lo storico aperture: ' + error.message;
     render();
   });
 }
@@ -1755,7 +1784,8 @@ function viewAdmin() {
     ['calendar', 'Calendario'],
     ['summary', 'Riepilogo'],
     ['maintenance', 'Manutenzioni', openMaintenanceCount],
-    ['stock', 'Scorte', openStockCount]
+    ['stock', 'Scorte', openStockCount],
+    ['doorHistory', 'Aperture porta']
   ];
   let html = `<div class="view-title">📋 Area Admin</div>
     <div class="maintenance-tabs" role="tablist" aria-label="Sezioni amministratore">
@@ -1772,6 +1802,7 @@ function viewAdmin() {
   if (state.adminTab === 'maintenance') return html + renderAdminMaintenance();
   if (state.adminTab === 'summary') return html + renderAdminSummary();
   if (state.adminTab === 'stock') return html + renderAdminStock();
+  if (state.adminTab === 'doorHistory') return html + renderDoorHistory();
   return html + renderAdminCalendar();
 }
 
@@ -1887,6 +1918,33 @@ function renderAdminMaintenance() {
     html += reports.map(renderMaintenanceReport).join('');
   }
   return html;
+}
+
+function renderDoorHistory() {
+  if (state.doorHistoryError) {
+    return `<div class="error-box">${escapeHtml(state.doorHistoryError)}</div>`;
+  }
+  if (state.doorHistoryLoading) {
+    return '<div class="empty">Caricamento storico aperture…</div>';
+  }
+  if (!state.doorOpenings.length) {
+    return '<div class="empty">Nessuna apertura registrata.</div>';
+  }
+  return `<div class="card">
+    <div class="card-title">Storico aperture porta</div>
+    <div class="card-sub">Aperture registrate dall’app, dalla più recente.</div>
+    ${state.doorOpenings.map(opening => {
+      const openedAt = formatStockDate(opening.openedAt);
+      const operator = typeof opening.openedBy === 'string'
+        ? opening.openedBy.slice(0, 8)
+        : 'non disponibile';
+      return `<div class="stock-report-card">
+        <div class="stock-report-name">🚪 Porta aperta</div>
+        <div class="stock-report-meta">${escapeHtml(openedAt)}</div>
+        <div class="stock-report-meta">Account app: ${escapeHtml(operator)}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function formatStockDate(value) {
@@ -2325,6 +2383,7 @@ document.getElementById('main').addEventListener('click', async e => {
   else if (action === 'openDoor') {
     btn.disabled = true;
     try {
+      if (!auth.currentUser) throw new Error('Accesso app non pronto. Riprova tra poco.');
       if (DOOR_WORKER_URL.includes('<')) {
         throw new Error('Completa prima la configurazione del Worker Cloudflare.');
       }
@@ -2335,6 +2394,15 @@ document.getElementById('main').addEventListener('click', async e => {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Comando rifiutato.');
+      try {
+        await addDoc(doorOpeningsRef, {
+          openedAt: serverTimestamp(),
+          openedBy: auth.currentUser.uid
+        });
+      } catch (err) {
+        toast('Porta aperta, ma storico non salvato: ' + err.message);
+        return;
+      }
       toast('Comando di apertura inviato');
     } catch (err) {
       toast(err.message === 'Failed to fetch'
@@ -2676,6 +2744,7 @@ onAuthStateChanged(auth, async user => {
     if (!wasAdmin && (state.view === 'home' || state.view === 'stock')) state.view = 'admin';
     if (!wasAdmin) {
       subscribeToMaintenanceReports();
+      subscribeToDoorOpenings();
       subscribeToAdminStock();
       ensureDefaultStockProducts().catch(error => {
         state.stockError = 'Impossibile preparare l’elenco prodotti: ' + error.message;
@@ -2697,6 +2766,13 @@ onAuthStateChanged(auth, async user => {
       state.maintenancePhotoUrls = {};
       state.maintenancePhotoLoading = {};
       state.maintenancePhotoErrors = {};
+    }
+    if (unsubscribeDoorOpenings) {
+      unsubscribeDoorOpenings();
+      unsubscribeDoorOpenings = null;
+      state.doorOpenings = [];
+      state.doorHistoryLoading = true;
+      state.doorHistoryError = null;
     }
     if (!user) {
       try {

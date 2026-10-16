@@ -58,6 +58,12 @@ main{padding:12px 14px 20px;max-width:640px;margin:0 auto}
 .stat{background:#fff;border-radius:14px;padding:12px 6px;text-align:center;
   box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .stat.wide{grid-column:1 / -1;padding:14px}
+.door-open-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  border:0;font-family:inherit;cursor:pointer;background:var(--primary);color:#fff;
+  box-shadow:0 2px 5px rgba(37,99,235,.22);transition:transform .12s,background .12s}
+.door-open-btn:active{transform:scale(.98);background:var(--primary-dark)}
+.door-open-icon{font-size:21px;line-height:1}
+.door-open-label{font-size:15px;font-weight:800}
 .stat-num{font-size:26px;font-weight:800;color:var(--primary);line-height:1}
 .stat-lbl{font-size:10px;color:var(--muted);margin-top:5px;font-weight:700;
   text-transform:uppercase;letter-spacing:.3px}

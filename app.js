@@ -82,6 +82,7 @@ const AUTO_UPDATE_MS = 60 * 60 * 1000;
 const VISIBILITY_THRESHOLD_MS = 30 * 60 * 1000;
 const STALE_MS = 90 * 60 * 1000;
 const VERY_STALE_MS = 24 * 60 * 60 * 1000;
+const DOOR_WORKER_URL = "https://calendario-open-door.docimusa.workers.dev/";
 
 const GIORNI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
@@ -1210,14 +1211,11 @@ function renderNav() {
 function viewHome() {
   const today = new Date();
   const days = [];
-  for (let i = 0; i < 7; i++) days.push(addDays(today, i));
+  for (let i = 0; i < 3; i++) days.push(addDays(today, i));
 
   const cToday = getCleaningsForDate(toKey(days[0]));
   const cTom   = getCleaningsForDate(toKey(days[1]));
   const cAfter = getCleaningsForDate(toKey(days[2]));
-
-  let total7 = 0;
-  days.forEach(d => { total7 += getCleaningsForDate(toKey(d)).length; });
 
   let html = '';
 
@@ -1237,10 +1235,10 @@ function viewHome() {
       <div class="stat-lbl">Dopodomani</div>
       <div class="stat-date">${shortDate(days[2])}</div>
     </div>
-    <div class="stat wide">
-      <div class="stat-num">${total7}</div>
-      <div class="stat-lbl">Pulizie prossimi 7 giorni</div>
-    </div>
+    <button class="stat wide door-open-btn" type="button" data-action="openDoor">
+      <span class="door-open-icon" aria-hidden="true">🚪</span>
+      <span class="door-open-label">Apri la porta</span>
+    </button>
   </div>`;
 
   if (state.fetching && state.fetchProgress.total > 0) {
@@ -2323,6 +2321,28 @@ document.getElementById('main').addEventListener('click', async e => {
 
   if (action === 'detail') {
     showDetail(+btn.dataset.room, btn.dataset.date);
+  }
+  else if (action === 'openDoor') {
+    btn.disabled = true;
+    try {
+      if (DOOR_WORKER_URL.includes('<')) {
+        throw new Error('Completa prima la configurazione del Worker Cloudflare.');
+      }
+      const response = await fetch(DOOR_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Comando rifiutato.');
+      toast('Comando di apertura inviato');
+    } catch (err) {
+      toast(err.message === 'Failed to fetch'
+        ? 'Worker non raggiungibile. Controlla URL e connessione.'
+        : err.message);
+    } finally {
+      btn.disabled = false;
+    }
   }
   else if (action === 'saveSettings') {
     try {

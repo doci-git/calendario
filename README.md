@@ -53,6 +53,9 @@ manutenzioni e scorte.
   check-in valido. Per non perdere pulizie con cambio ospite nello stesso giorno,
   gli eventi Booking sono trattati come prenotazioni; eventuali blocchi Booking
   ambigui vanno esclusi dall’Admin.
+- Nella schermata Pulizie il riepilogo dei prossimi 7 giorni è sostituito da un
+  pulsante per aprire la porta. Il comando usa un Worker Cloudflare; la chiave
+  Shelly resta secret del Worker e il pulsante non chiede un PIN.
 
 Le impostazioni iCal restano nel documento `apps/pulizie`, leggibile dall’app per
 consentire allo Staff la sincronizzazione. Come ogni applicazione statica che legge
@@ -106,11 +109,44 @@ definiti in `firestore.rules`.
 4. In Firestore, verifica che esista il documento `apps/pulizie` con i link iCal.
    Se non esiste, accedi come admin, configura le camere in **Impostazioni** e salva.
 
+## Apertura porta con Cloudflare Worker (piano Firebase Spark)
+
+Puoi configurare il Worker direttamente dalla dashboard Cloudflare, senza
+installare Node.js o usare Wrangler. È consigliato creare un Worker separato da
+quello dei calendari: il proxy iCal inoltra richieste di lettura, mentre il Worker
+della porta invia un comando Shelly senza chiedere un PIN.
+
+**Attenzione:** senza PIN o altro login, chiunque trovi l’indirizzo del Worker può
+richiamarlo e aprire la porta. L’indirizzo del Worker è presente nel codice pubblico
+dell’app, quindi non è segreto. Il controllo dell’origine limita le pagine web, ma
+non protegge da chiamate dirette. Ruota la chiave Shelly se sospetti che sia stata
+esposta.
+
+1. Revoca la chiave Shelly condivisa in precedenza e generane una nuova.
+2. Accedi a Cloudflare e apri **Workers & Pages → Create → Create Worker**.
+   Chiamalo `calendario-open-door`, crea/deploya il Worker predefinito, poi apri
+   **Edit code**.
+3. In questa cartella del progetto apri `door-worker/src/index.js`, copia tutto il
+   contenuto e sostituisci il codice iniziale nell’editor Cloudflare. Premi **Deploy**.
+4. Nel Worker apri **Settings → Variables and Secrets**. Aggiungi:
+   - `ALLOWED_ORIGIN` come variabile di testo con valore `https://doci-git.github.io`
+   - `SHELLY_AUTH_KEY` come **Secret**, inserendo la nuova chiave Shelly
+
+   Non aggiungere la chiave al codice del sito. Se in precedenza avevi creato il
+   secret `DOOR_PIN`, puoi rimuoverlo: non serve più. Il Worker autorizza anche
+   `http://127.0.0.1:5500` e `http://localhost:5500` per il test locale. Premi
+   **Deploy** per applicare il codice e le variabili.
+5. Verifica che l’indirizzo `workers.dev` mostrato da Cloudflare corrisponda a
+   quello impostato come `DOOR_WORKER_URL` in `app.js`. Se è diverso, aggiorna
+   `DOOR_WORKER_URL` con l’indirizzo corretto.
+6. Fai push delle modifiche a GitHub Pages. Apri l’app, premi **Apri la porta** e
+   il comando viene inviato subito, senza PIN. Firebase rimane sul piano Spark.
+
 ## Pubblicazione su GitHub Pages
 
 1. Pubblica prima le regole Firestore come descritto sopra.
 2. Fai push su GitHub delle modifiche a `index.html`, `style.css`, `app.js`,
-   `README.md`, `firebase.json` e `firestore.rules`.
+   `README.md`, `firebase.json`, `firestore.rules` e `door-worker`.
 3. In GitHub, apri **Settings → Pages** e seleziona il branch e la cartella usati
    dal repository per Pages. Se Pages è già configurato, il push pubblica
    automaticamente la nuova versione.

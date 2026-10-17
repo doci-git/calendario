@@ -24,9 +24,11 @@ manutenzioni e scorte.
   le frecce.
 - L’Admin archivia le pulizie per data in Firestore dopo la sincronizzazione dei
   calendari. Il riepilogo dei mesi passati usa questi dati salvati, anche quando gli
-  eventi non sono più presenti nei feed iCal. Le sincronizzazioni successive
-  possono aggiungere ai giorni passati pulizie rilevate dai feed, senza cancellare
-  voci già archiviate anche se non compaiono più nei feed.
+  eventi non sono più presenti nei feed iCal. Per la giornata corrente, le pulizie
+  già archiviate restano nel riepilogo anche se una sincronizzazione successiva non
+  restituisce più il relativo evento; le nuove pulizie rilevate vengono aggiunte.
+  Le sincronizzazioni successive possono aggiungere ai giorni passati pulizie
+  rilevate dai feed, senza cancellare voci già archiviate.
   L’archivio inizia a raccogliere dati dopo la pubblicazione di questa funzione e il
   primo accesso/sincronizzazione Admin; i mesi precedenti senza dati archiviati
   mostrano ancora quanto disponibile dai feed.

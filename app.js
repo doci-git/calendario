@@ -1591,11 +1591,16 @@ async function persistCleaningArchive(failedTasks) {
     if (date < today) continue;
 
     const priorEntries = existing && Array.isArray(existing.entries) ? existing.entries : [];
-    const entries = mergeArchivedEntries(
-      priorEntries,
-      liveEntriesByDate.get(date) || [],
-      syncedRooms
-    );
+    const entries = date === today
+      ? mergeHistoricalEntries(
+        priorEntries.filter(entry => !state.blockOverrides[cleaningKey(entry.roomId, date)]),
+        liveEntriesByDate.get(date) || []
+      )
+      : mergeArchivedEntries(
+        priorEntries,
+        liveEntriesByDate.get(date) || [],
+        syncedRooms
+      );
     const archiveRef = doc(cleaningArchiveRef, date);
     if (!entries.length) {
       if (existing) writes.push({ ref: archiveRef, delete: true });
@@ -1621,7 +1626,8 @@ async function persistCleaningArchive(failedTasks) {
 function ensureAdminArchiveLoaded(start, end) {
   const startKey = toKey(start);
   const today = toKey(new Date());
-  const archiveEnd = end < fromKey(today) ? end : fromKey(today);
+  const tomorrow = addDays(fromKey(today), 1);
+  const archiveEnd = end < tomorrow ? end : tomorrow;
   if (start >= archiveEnd) return null;
 
   const endKey = toKey(archiveEnd);
@@ -1851,7 +1857,8 @@ function renderAdminSummary() {
     ? new Date(date.getFullYear(), date.getMonth() + 1, 1)
     : addDays(start, 7);
   const today = toKey(new Date());
-  const archiveEnd = end < fromKey(today) ? end : fromKey(today);
+  const tomorrow = addDays(fromKey(today), 1);
+  const archiveEnd = end < tomorrow ? end : tomorrow;
   const archiveKey = start < archiveEnd
     ? `${toKey(start)}|${toKey(archiveEnd)}`
     : null;
@@ -1864,7 +1871,7 @@ function renderAdminSummary() {
   const summary = { planned: 0, completed: 0 };
   for (let day = new Date(start); day < end; day = addDays(day, 1)) {
     const dayKey = toKey(day);
-    const archivedDay = dayKey < today ? archivedByDate.get(dayKey) : null;
+    const archivedDay = dayKey <= today ? archivedByDate.get(dayKey) : null;
     if (archivedDay) {
       const count = Array.isArray(archivedDay.entries) ? archivedDay.entries.length : 0;
       summary.planned += count;
@@ -1889,7 +1896,7 @@ function renderAdminSummary() {
     ? `<div class="error-box">${escapeHtml(state.adminArchiveError)}</div>`
     : ''}
   <div class="admin-note">${hasArchivedEntries
-    ? 'I giorni passati con uno storico salvato usano i dati Firestore; gli altri usano i dati iCal disponibili.'
+    ? 'I giorni con uno storico salvato usano i dati Firestore; gli altri usano i dati iCal disponibili.'
     : waitingForArchive
       ? 'Caricamento dei dati storici…'
       : '1 checkout = 1 cambio completo di biancheria. Il costo mensile considera le pulizie dei giorni passati.'}</div>`;
